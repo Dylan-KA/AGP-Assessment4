@@ -6,7 +6,7 @@
 #include "WheeledVehiclePawn.h"
 #include "UProceduralComponent.h"
 #include "Components/PointLightComponent.h"
-#include "RacingDemo/VehicleHUD.h"
+#include "VehicleHUD.h"
 #include "PCGVehiclePawn.generated.h"
 
 USTRUCT(BlueprintType)
