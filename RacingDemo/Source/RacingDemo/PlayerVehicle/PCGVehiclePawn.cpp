@@ -10,6 +10,7 @@ APCGVehiclePawn::APCGVehiclePawn()
 	PrimaryActorTick.bCanEverTick = true;
 	
 	ProceduralComponent = CreateDefaultSubobject<UProceduralComponent>("Procedural Component");
+	FuelComponent = CreateDefaultSubobject<UFuelComponent>("Fuel Component");
 	MyVehicleMovementComponent = GetVehicleMovementComponent();
 	SetupLightComponents();
 }
@@ -24,21 +25,11 @@ void APCGVehiclePawn::BeginPlay()
 	ApplyWeightDistribution();
 	GenerateProceduralMaterial();
 	SetUnderGlowColour();
-	CurrentFuel = VehicleStats.MaxFuelCapacity;
+	FuelComponent->SetCurrentFuel(VehicleStats.MaxFuelCapacity);
 
 	// HUD
 	DrawUI();
 	
-}
-
-// If vehicle is driving then decrease amount of fuel
-void APCGVehiclePawn::UpdateFuelAmount(float DeltaTime)
-{
-	if (MyVehicleMovementComponent->GetForwardSpeedMPH() > 0.0f)
-	{
-		//UE_LOG(LogTemp, Warning, TEXT("CurrentFuel: %f"), CurrentFuel)
-		CurrentFuel -= DeltaTime/10;
-	}
 }
 
 // Generates and applies a procedural material
@@ -160,9 +151,7 @@ void APCGVehiclePawn::DrawUI()
 			}
 		}
 	}
-	// Update Speed
-	// Update Gear
-	// Update Fuel
+	UpdateUI();
 }
 
 void APCGVehiclePawn::UpdateUI()
@@ -185,29 +174,13 @@ void APCGVehiclePawn::UpdateUI()
 		VehicleHUD->SetGearText(MyVehicleMovementComponent->GetCurrentGear() * -1);
 	}
 
-	VehicleHUD->SetFuelText(CurrentFuel);
+	VehicleHUD->SetFuelText(FuelComponent->GetCurrentFuel());
 }
 
 // Called every frame
 void APCGVehiclePawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	// Manage fuel system, update fuel amount,
-	// if out of fuel then prevent vehicle from driving
-	if (CurrentFuel <= 0.0f && !bIsOutOfFuel)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Out of fuel"))
-		MyVehicleMovementComponent->SetHandbrakeInput(1.0f);
-		bIsOutOfFuel = true;
-		CurrentFuel = 0.0f;
-	}
-	if (bIsOutOfFuel)
-	{
-		MyVehicleMovementComponent->SetHandbrakeInput(1.0f);
-	} else {
-		UpdateFuelAmount(DeltaTime);
-	}
 
 	// Update HUD
 	UpdateUI();

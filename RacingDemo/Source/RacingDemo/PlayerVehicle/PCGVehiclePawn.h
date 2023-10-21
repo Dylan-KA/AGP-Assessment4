@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "FuelComponent.h"
 #include "WheeledVehiclePawn.h"
 #include "UProceduralComponent.h"
 #include "Components/PointLightComponent.h"
@@ -80,17 +81,14 @@ protected:
 	// ProceduralComponent
 	UPROPERTY()
 	UProceduralComponent* ProceduralComponent;
+
+	// FuelComponent
+	UPROPERTY()
+	UFuelComponent* FuelComponent;
 	
 	// ChaosVehicleMovementComponent used for getting current speed of vehicle
 	UPROPERTY()
 	UChaosVehicleMovementComponent* MyVehicleMovementComponent;
-
-	// If vehicle is driving then decrease amount of fuel
-	void UpdateFuelAmount(float DeltaTime);
-
-	// Current fuel capacity, if out of fuel then cannot drive
-	float CurrentFuel = VehicleStats.MaxFuelCapacity;
-	bool bIsOutOfFuel = false;
 
 	// Procedural Vehicle Material
 	UPROPERTY(VisibleAnywhere)
@@ -125,7 +123,6 @@ protected:
 	// Vehicle HUD
 	UPROPERTY()
 	UVehicleHUD* VehicleHUD;
-
 	void DrawUI();
 	void UpdateUI();
 	
