@@ -6,6 +6,7 @@
 #include "WheeledVehiclePawn.h"
 #include "UProceduralComponent.h"
 #include "Components/PointLightComponent.h"
+#include "VehicleHUD.h"
 #include "PCGVehiclePawn.generated.h"
 
 USTRUCT(BlueprintType)
@@ -116,6 +117,17 @@ protected:
 	
 	// Sets the colour of the light underneath the car based on rarity
 	void SetUnderGlowColour() const;
+
+	// Vehicle HUD Class
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UVehicleHUD> VehicleHUDClass;
+
+	// Vehicle HUD
+	UPROPERTY()
+	UVehicleHUD* VehicleHUD;
+
+	void DrawUI();
+	void UpdateUI();
 	
 public:	
 	// Called every frame

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/TextBlock.h"
 #include "VehicleHUD.generated.h"
 
 /**
@@ -13,5 +14,21 @@ UCLASS()
 class RACINGDEMO_API UVehicleHUD : public UUserWidget
 {
 	GENERATED_BODY()
+
+public:
+	void SetSpeedText(int32 NewSpeed);
+	void SetGearText(int32 NewGear);
+	void SetFuelText(float NewFuel);
+	
+protected:
+
+	UPROPERTY(EditAnywhere, meta=(BindWidget))
+	class UTextBlock* SpeedText;
+
+	UPROPERTY(EditAnywhere, meta=(BindWidget))
+	class UTextBlock* GearText;
+
+	UPROPERTY(EditAnywhere, meta=(BindWidget))
+	class UTextBlock* FuelText;
 	
 };

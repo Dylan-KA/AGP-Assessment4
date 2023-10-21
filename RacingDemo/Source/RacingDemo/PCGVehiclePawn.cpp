@@ -19,17 +19,22 @@ void APCGVehiclePawn::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// Procedural setup
 	ProceduralComponent->GenerateRandomVehicle(VehicleRarity, VehicleStats);
 	ApplyWeightDistribution();
 	GenerateProceduralMaterial();
 	SetUnderGlowColour();
 	CurrentFuel = VehicleStats.MaxFuelCapacity;
+
+	// HUD
+	DrawUI();
+	
 }
 
 // If vehicle is driving then decrease amount of fuel
 void APCGVehiclePawn::UpdateFuelAmount(float DeltaTime)
 {
-	if (MyVehicleMovementComponent->GetForwardSpeed() > 0.0f)
+	if (MyVehicleMovementComponent->GetForwardSpeedMPH() > 0.0f)
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("CurrentFuel: %f"), CurrentFuel)
 		CurrentFuel -= DeltaTime/10;
@@ -142,6 +147,47 @@ void APCGVehiclePawn::SetUnderGlowColour() const
 	}
 }
 
+void APCGVehiclePawn::DrawUI()
+{
+	if (IsLocallyControlled() && VehicleHUDClass)
+	{
+		if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+		{
+			VehicleHUD = CreateWidget<UVehicleHUD>(PlayerController, VehicleHUDClass);
+			if (VehicleHUD)
+			{
+				VehicleHUD->AddToPlayerScreen();
+			}
+		}
+	}
+	// Update Speed
+	// Update Gear
+	// Update Fuel
+}
+
+void APCGVehiclePawn::UpdateUI()
+{
+	if (MyVehicleMovementComponent->GetForwardSpeedMPH() > 0)
+	{
+		VehicleHUD->SetSpeedText(MyVehicleMovementComponent->GetForwardSpeedMPH());
+	} else
+	{
+		// Prevents returning a negative speed when reversing
+		VehicleHUD->SetSpeedText(MyVehicleMovementComponent->GetForwardSpeedMPH() * -1);
+	}
+	
+	if (MyVehicleMovementComponent->GetCurrentGear() > 0)
+	{
+		VehicleHUD->SetGearText(MyVehicleMovementComponent->GetCurrentGear());
+	} else
+	{
+		// Prevents returning a negative gear when reversing
+		VehicleHUD->SetGearText(MyVehicleMovementComponent->GetCurrentGear() * -1);
+	}
+
+	VehicleHUD->SetFuelText(CurrentFuel);
+}
+
 // Called every frame
 void APCGVehiclePawn::Tick(float DeltaTime)
 {
@@ -154,13 +200,17 @@ void APCGVehiclePawn::Tick(float DeltaTime)
 		UE_LOG(LogTemp, Warning, TEXT("Out of fuel"))
 		MyVehicleMovementComponent->SetHandbrakeInput(1.0f);
 		bIsOutOfFuel = true;
-	} else {
-		UpdateFuelAmount(DeltaTime);
+		CurrentFuel = 0.0f;
 	}
 	if (bIsOutOfFuel)
 	{
 		MyVehicleMovementComponent->SetHandbrakeInput(1.0f);
+	} else {
+		UpdateFuelAmount(DeltaTime);
 	}
+
+	// Update HUD
+	UpdateUI();
 	
 }
 
