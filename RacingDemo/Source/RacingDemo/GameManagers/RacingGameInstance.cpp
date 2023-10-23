@@ -7,4 +7,9 @@
   return VehicleClass.Get();
 }
 
+UClass* URacingGameInstance::GetRoadMeshClass() const
+ {
+  return RoadSplineMeshClass.Get();
+ }
+
 
