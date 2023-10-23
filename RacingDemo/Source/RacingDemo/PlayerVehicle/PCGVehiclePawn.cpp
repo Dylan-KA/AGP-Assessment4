@@ -178,6 +178,7 @@ void APCGVehiclePawn::UpdateUI()
 
 void APCGVehiclePawn::ManageFuel(float DeltaTime)
 {
+	VehicleHUD->SetFuelColour(FuelComponent->IsOutOfFuel());
 	if (FuelComponent->IsOutOfFuel())
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("Out of fuel"))

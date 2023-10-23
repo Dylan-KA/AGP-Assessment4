@@ -19,6 +19,7 @@ public:
 	void SetSpeedText(int32 NewSpeed);
 	void SetGearText(int32 NewGear);
 	void SetFuelText(float NewFuel);
+	void SetFuelColour(bool OutOfFuel);
 	
 protected:
 

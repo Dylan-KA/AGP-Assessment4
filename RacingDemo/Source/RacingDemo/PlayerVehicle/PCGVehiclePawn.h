@@ -70,6 +70,10 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	FVehicleStats VehicleStats;
 
+	// Vehicle HUD
+	UPROPERTY()
+	UVehicleHUD* VehicleHUD;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -121,8 +125,6 @@ protected:
 	TSubclassOf<UVehicleHUD> VehicleHUDClass;
 
 	// Vehicle HUD
-	UPROPERTY()
-	UVehicleHUD* VehicleHUD;
 	void DrawUI();
 	void UpdateUI();
 
