@@ -17,6 +17,16 @@ AProceduralRacetrackActor::AProceduralRacetrackActor()
 	SetRootComponent(ProceduralMesh);
 }
 
+FVector AProceduralRacetrackActor::GetStartPosition()
+{
+	return StartPosition;
+}
+
+FVector AProceduralRacetrackActor::GetEndPosition()
+{
+	return EndPosition;
+}
+
 // Called when the game starts or when spawned
 void AProceduralRacetrackActor::BeginPlay()
 {
@@ -209,6 +219,9 @@ void AProceduralRacetrackActor::BuildTrack()
 				{
 					StartFlagMeshComponent->SetStaticMesh(StartFlagMesh);
 				}
+
+				// Spawn PlayerStart
+				// PlayerStart = GetWorld()->SpawnActor<APlayerStart>(PrevPosition, Rotation);
 				
 			}
 		}

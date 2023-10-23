@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Engine/StaticMeshActor.h"
 #include "GameFramework/Actor.h"
+#include "GameFramework/PlayerStart.h"
 #include "RacingDemo/Pathfinding/PathfindingSubsystem.h"
 #include "RacingDemo/RoadSplineMeshActor.h"
 #include "ProceduralRacetrackActor.generated.h"
@@ -18,6 +19,10 @@ class RACINGDEMO_API AProceduralRacetrackActor : public AActor
 public:	
 	// Sets default values for this actor's properties
 	AProceduralRacetrackActor();
+
+	FVector GetStartPosition();
+
+	FVector GetEndPosition();
 
 protected:
 	// Called when the game starts or when spawned
@@ -51,6 +56,9 @@ protected:
 	AStaticMeshActor* StartFlagMeshActor;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UStaticMesh* StartFlagMesh;
+
+	//UPROPERTY()
+	//APlayerStart* PlayerStart; 
 
 	// Meshes 
 	UPROPERTY()
