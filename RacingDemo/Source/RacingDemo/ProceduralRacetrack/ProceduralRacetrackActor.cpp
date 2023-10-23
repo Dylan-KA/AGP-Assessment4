@@ -3,7 +3,7 @@
 
 #include "ProceduralRacetrackActor.h"
 #include "ProceduralMeshComponent.h"
-#include "RacingDemo/RacingGameInstance.h"
+#include "RacingDemo/GameManagers/RacingGameInstance.h"
 #include "Components/SplineMeshComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
