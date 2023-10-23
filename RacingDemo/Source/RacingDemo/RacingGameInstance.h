@@ -4,10 +4,9 @@
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
 #include "WheeledVehiclePawn.h"
-#include "ProceduralRacetrack/RoadSplineMeshActor.h"
+#include "RoadSplineMeshActor.h"
 #include "RacingGameInstance.generated.h"
 
-class AWeaponPickup;
 /**
  * 
  */

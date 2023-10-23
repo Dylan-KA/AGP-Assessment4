@@ -187,6 +187,8 @@ void AProceduralRacetrackActor::BuildTrack()
 			if (const URacingGameInstance* GameInstance =
 				GetWorld()->GetGameInstance<URacingGameInstance>())
 			{
+				UE_LOG(LogTemp, Warning, TEXT("End: %p"), GameInstance->GetRoadMeshClass());
+
 				ARoadSplineMeshActor* RoadMeshActor = GetWorld()->SpawnActor<ARoadSplineMeshActor>(
 				GameInstance->GetRoadMeshClass(), PrevPosition,Rotation);
 				RoadMeshActors.Add(RoadMeshActor);
@@ -201,7 +203,7 @@ void AProceduralRacetrackActor::BuildTrack()
 			{
 				StartFlagMeshActor = GetWorld()->SpawnActor<AStaticMeshActor>(MidPoint, Rotation);
 				StartFlagMeshActor->SetMobility(EComponentMobility::Stationary);
-				//TreeMeshActor->SetActorLocation(SpawnPosition);
+
 				UStaticMeshComponent* StartFlagMeshComponent = StartFlagMeshActor->GetStaticMeshComponent();
 				if (StartFlagMeshComponent)
 				{
@@ -266,6 +268,7 @@ void AProceduralRacetrackActor::SpawnTrees()
 		// randomly select a tree from the list of tree meshes
 		UStaticMesh* Tree = TreeMeshes[FMath::RandRange(0, TreeMeshes.Num() - 1)];
 		FVector SpawnPosition = PossibleSpawnPositions[FMath::RandRange(0, PossibleSpawnPositions.Num() - 1)];
+		
 		// and spawn it in a random possible spawn location
 		AStaticMeshActor* TreeMeshActor = GetWorld()->SpawnActor<AStaticMeshActor>(SpawnPosition,
 			FRotator(0,FMath::RandRange(0, 360),0));

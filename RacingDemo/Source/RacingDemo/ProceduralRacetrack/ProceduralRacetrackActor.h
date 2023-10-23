@@ -6,7 +6,7 @@
 #include "Engine/StaticMeshActor.h"
 #include "GameFramework/Actor.h"
 #include "RacingDemo/Pathfinding/PathfindingSubsystem.h"
-#include "RoadSplineMeshActor.h"
+#include "RacingDemo/RoadSplineMeshActor.h"
 #include "ProceduralRacetrackActor.generated.h"
 
 class UProceduralMeshComponent;

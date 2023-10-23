@@ -9,7 +9,7 @@
 
 UClass* URacingGameInstance::GetRoadMeshClass() const
  {
-  return RoadSplineMeshClass;
+  return RoadSplineMeshClass.Get();
  }
 
 
