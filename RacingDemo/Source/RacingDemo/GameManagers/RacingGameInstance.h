@@ -4,7 +4,7 @@
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
 #include "WheeledVehiclePawn.h"
-#include "RacingDemo/RoadSplineMeshActor.h"
+#include "RacingDemo/ProceduralRacetrack/RoadSplineMeshActor.h"
 #include "RacingGameInstance.generated.h"
 
 /**
