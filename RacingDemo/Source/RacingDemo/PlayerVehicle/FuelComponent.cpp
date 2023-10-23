@@ -10,14 +10,13 @@ UFuelComponent::UFuelComponent()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-	
+
 	if (AWheeledVehiclePawn* WheeledVehiclePawn = Cast<AWheeledVehiclePawn>(GetOwner()))
 	{
 		MyVehicleMovementComponent = WheeledVehiclePawn->GetVehicleMovementComponent();
 	}
 
 }
-
 
 // Called when the game starts
 void UFuelComponent::BeginPlay()
@@ -26,34 +25,6 @@ void UFuelComponent::BeginPlay()
 
 	// ...
 	
-}
-
-
-void UFuelComponent::ManageFuel(float DeltaTime)
-{
-	// Manage fuel system, update fuel amount,
-	// if out of fuel then prevent vehicle from driving
-	if (CurrentFuel <= 0.0f && !bIsOutOfFuel)
-	{
-		//UE_LOG(LogTemp, Warning, TEXT("Out of fuel"))
-		MyVehicleMovementComponent->SetHandbrakeInput(1.0f);
-		bIsOutOfFuel = true;
-		CurrentFuel = 0.0f;
-	}
-	if (bIsOutOfFuel)
-	{
-		MyVehicleMovementComponent->SetHandbrakeInput(1.0f);
-	} else {
-		UpdateFuelAmount(DeltaTime);
-	}
-}
-
-// Called every frame
-void UFuelComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	ManageFuel(DeltaTime);
 }
 
 // If vehicle is driving then decrease amount of fuel
@@ -66,18 +37,38 @@ void UFuelComponent::UpdateFuelAmount(float DeltaTime)
 	}
 }
 
+// Called every frame
+void UFuelComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+}
+
+// Sets the current fuel
 void UFuelComponent::SetCurrentFuel(float NewFuel)
 {
 	CurrentFuel = NewFuel;
 }
 
+// Adds to the current fuel
+void UFuelComponent::AddFuel(float AddFuel)
+{
+	CurrentFuel += AddFuel;
+}
+
+// Gets the current fuel amount
 float UFuelComponent::GetCurrentFuel()
 {
 	return CurrentFuel;
 }
 
+// Return true if out of fuel
 bool UFuelComponent::IsOutOfFuel()
 {
-	return bIsOutOfFuel;
+	if (CurrentFuel <= 0.0f)
+	{
+		return true;
+	}
+	return false;
 }
 

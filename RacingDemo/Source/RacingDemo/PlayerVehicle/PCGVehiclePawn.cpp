@@ -27,7 +27,6 @@ void APCGVehiclePawn::BeginPlay()
 	SetUnderGlowColour();
 	FuelComponent->SetCurrentFuel(VehicleStats.MaxFuelCapacity);
 
-	// HUD
 	DrawUI();
 	
 }
@@ -177,13 +176,25 @@ void APCGVehiclePawn::UpdateUI()
 	VehicleHUD->SetFuelText(FuelComponent->GetCurrentFuel());
 }
 
+void APCGVehiclePawn::ManageFuel(float DeltaTime)
+{
+	if (FuelComponent->IsOutOfFuel())
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("Out of fuel"))
+		FuelComponent->SetCurrentFuel(0.0f);
+	} else
+	{
+		FuelComponent->UpdateFuelAmount(DeltaTime);
+	}
+}
+
 // Called every frame
 void APCGVehiclePawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	// Update HUD
 	UpdateUI();
+	ManageFuel(DeltaTime);
 	
 }
 

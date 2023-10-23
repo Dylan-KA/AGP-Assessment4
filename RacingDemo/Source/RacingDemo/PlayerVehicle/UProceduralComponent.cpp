@@ -48,11 +48,11 @@ void UProceduralComponent::GenerateRandomVehicle(EVehicleRarity& VehicleRarity, 
 	}
 
 	// Randomly choose the stats of the vehicle depending on whether each is a good or bad stat
-	VehicleStats.Acceleration = GoodStats[0] ? FMath::RandRange(0.8f, 1.0f) : FMath::RandRange(0.3f, 0.79f);
+	VehicleStats.Acceleration = GoodStats[0] ? FMath::RandRange(0.8f, 1.0f) : FMath::RandRange(0.5f, 0.79f);
 	VehicleStats.ReverseAcceleration = GoodStats[1] ? FMath::RandRange(0.8f, 1.0f) : FMath::RandRange(0.3f, 0.79f);
 	VehicleStats.TopSpeed = GoodStats[2] ? FMath::RandRange(2000, 5000) : FMath::RandRange(5000, 8000);
 	VehicleStats.WeightDistribution = GoodStats[3] ? FMath::RandRange(0.0f, 50.0f) : FMath::RandRange(-50.0f, -150.0f);
-	VehicleStats.MaxFuelCapacity = GoodStats[4] ? FMath::RandRange(10.0f, 20.0f) : FMath::RandRange(1.0f, 5.0f);
+	VehicleStats.MaxFuelCapacity = GoodStats[4] ? FMath::RandRange(3.0f, 7.0f) : FMath::RandRange(1.0f, 3.0f);
 	VehicleStats.TurningSpeed = GoodStats[5] ? FMath::RandRange(0.8f, 0.99f) : FMath::RandRange(0.5f, 0.79f);
 	
 	UE_LOG(LogTemp, Warning, TEXT("%s"), *VehicleStats.ToString())

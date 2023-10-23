@@ -66,6 +66,10 @@ public:
 	// Sets default values for this pawn's properties
 	APCGVehiclePawn();
 
+	// Current stats of the vehicle
+	UPROPERTY(BlueprintReadOnly)
+	FVehicleStats VehicleStats;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -74,16 +78,12 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 	EVehicleRarity VehicleRarity;
 
-	// Current stats of the vehicle
-	UPROPERTY(BlueprintReadOnly)
-	FVehicleStats VehicleStats;
-
 	// ProceduralComponent
 	UPROPERTY()
 	UProceduralComponent* ProceduralComponent;
 
 	// FuelComponent
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 	UFuelComponent* FuelComponent;
 	
 	// ChaosVehicleMovementComponent used for getting current speed of vehicle
@@ -125,6 +125,9 @@ protected:
 	UVehicleHUD* VehicleHUD;
 	void DrawUI();
 	void UpdateUI();
+
+	// Called during tick function to handle empty fuel
+	void ManageFuel(float DeltaTime);
 	
 public:	
 	// Called every frame

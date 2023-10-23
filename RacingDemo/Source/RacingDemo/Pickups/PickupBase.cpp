@@ -44,7 +44,7 @@ void APickupBase::BeginPlay()
 void APickupBase::OnPickupOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& HitInfo)
 {
-	UE_LOG(LogTemp, Display, TEXT("Overlap event occurred in PickupBase"))
+	UE_LOG(LogTemp, Warning, TEXT("Overlap event occurred in PickupBase"))
 }
 
 // Called every frame

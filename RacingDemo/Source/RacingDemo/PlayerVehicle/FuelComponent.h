@@ -24,20 +24,22 @@ protected:
 	// Current fuel capacity, if out of fuel then cannot drive
 	float CurrentFuel = 0.0f;
 	bool bIsOutOfFuel = false;
-
+	
+	
 	// ChaosVehicleMovementComponent used for getting current speed of vehicle
 	UPROPERTY()
 	UChaosVehicleMovementComponent* MyVehicleMovementComponent;
-
-	// Called during tick function to handle empty fuel
-	void ManageFuel(float DeltaTime);
 
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	void SetCurrentFuel(float NewFuel);
+	void AddFuel(float AddFuel);
 	float GetCurrentFuel();
+
+	// Returns true if out of fuel, false if not 
+	UFUNCTION(BlueprintCallable)
 	bool IsOutOfFuel();
 
 	// If vehicle is driving then decrease amount of fuel
