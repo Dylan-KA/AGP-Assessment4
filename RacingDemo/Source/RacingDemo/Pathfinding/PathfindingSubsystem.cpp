@@ -27,75 +27,22 @@ TArray<FVector> UPathfindingSubsystem::GetPathAway(const FVector& StartLocation,
 
 void UPathfindingSubsystem::PlaceProceduralNodes(const TArray<FVector>& LandscapeVertexData, int32 MapWidth, int32 MapHeight)
 {
-	// Need to destroy all of the current nodes in the world.
-	RemoveAllNodes();
-	NodePositions.Empty();
-	// Then create and place all the nodes and store them in the ProcedurallyPlacedNodes array.
-	for (int Y = 0; Y < MapHeight; Y++)
+	//Spawn Nodes only on the server
+	UE_LOG(LogTemp, Warning, TEXT("Netmode: %d"), GetWorld()->GetNetMode());
+	if (GetWorld()->GetNetMode() < NM_Client)
 	{
-		for (int X = 0; X < MapWidth; X++)
-		{
-			// Spawn the node in
-			if (ANavigationNode* Node = GetWorld()->SpawnActor<ANavigationNode>())
-			{
-				Node->SetActorLocation(LandscapeVertexData[Y * MapWidth + X]);
-				ProcedurallyPlacedNodes.Add(Node);
-				NodePositions.Add(Node->GetActorLocation());
-				
-			} else
-			{
-				UE_LOG(LogTemp, Error, TEXT("Unable to spawn a node for some reason. This is bad!"))
-			}
-			
-		}
+		PlaceProceduralNodesImplementation(LandscapeVertexData, MapWidth, MapHeight);
 	}
-	// Then add connections between all adjacent nodes.
-	for (int Y = 0; Y < MapHeight; Y++)
-	{
-		for (int X = 0; X < MapWidth; X++)
-		{
-			if (ANavigationNode* CurrentNode = ProcedurallyPlacedNodes[Y * MapWidth + X]) // Make sure it's a valid ptr.
-			{
-				// ADD CONNECTIONS:
-				// Add Left
-				if (X != MapWidth-1)
-					CurrentNode->ConnectedNodes.Add(ProcedurallyPlacedNodes[Y * MapWidth + X+1]);
-				// Add Up
-				if (Y != MapHeight-1)
-					CurrentNode->ConnectedNodes.Add(ProcedurallyPlacedNodes[(Y+1) * MapWidth + X]);
-				// Add Right
-				if (X != 0)
-					CurrentNode->ConnectedNodes.Add(ProcedurallyPlacedNodes[Y * MapWidth + X-1]);
-				// Add Down
-				if (Y != 0)
-					CurrentNode->ConnectedNodes.Add(ProcedurallyPlacedNodes[(Y-1) * MapWidth + X]);
-				// Add UpLeft
-				if (X != MapWidth-1 && Y != MapHeight-1)
-					CurrentNode->ConnectedNodes.Add(ProcedurallyPlacedNodes[(Y+1) * MapWidth + X+1]);
-				// Add UpRight
-				if (X != 0 && Y != MapHeight-1)
-					CurrentNode->ConnectedNodes.Add(ProcedurallyPlacedNodes[(Y+1) * MapWidth + X-1]);
-				// Add DownRight
-				if (X != 0 && Y != 0)
-					CurrentNode->ConnectedNodes.Add(ProcedurallyPlacedNodes[(Y-1) * MapWidth+ X-1]);
-				// Add DownLeft
-				if (X != MapWidth-1 && Y != 0)
-					CurrentNode->ConnectedNodes.Add(ProcedurallyPlacedNodes[(Y-1) * MapWidth + X+1]);
-			}
-		}
-	}
-
-	PopulateNodes();
 }
 
-TArray<FVector> UPathfindingSubsystem::GetWaypointPositions()
+TArray<FVector> UPathfindingSubsystem::GetNodePositions()
 {
 	return NodePositions;
 }
 
 TArray<ANavigationNode*> UPathfindingSubsystem::GetProceduralNodes()
 {
-	return ProcedurallyPlacedNodes;
+	return Nodes;
 }
 
 void UPathfindingSubsystem::PopulateNodes()
@@ -115,7 +62,6 @@ void UPathfindingSubsystem::PopulateNodes()
 void UPathfindingSubsystem::RemoveAllNodes()
 {
 	Nodes.Empty();
-	ProcedurallyPlacedNodes.Empty();
 
 	for (TActorIterator<ANavigationNode> It(GetWorld()); It; ++It)
 	{
@@ -132,7 +78,7 @@ ANavigationNode* UPathfindingSubsystem::GetRandomNode()
 		return nullptr;
 	}
 	const int32 RandIndex = FMath::RandRange(0, Nodes.Num()-1);
-	return ProcedurallyPlacedNodes[RandIndex];
+	return Nodes[RandIndex];
 }
 
 ANavigationNode* UPathfindingSubsystem::FindNearestNode(const FVector& TargetLocation)
@@ -288,4 +234,74 @@ TArray<FVector> UPathfindingSubsystem::ReconstructPath(const TMap<ANavigationNod
 	}
 
 	return ReverseNodeLocations;
+}
+
+void UPathfindingSubsystem::PlaceProceduralNodesImplementation(const TArray<FVector>& LandscapeVertexData,
+	int32 MapWidth, int32 MapHeight)
+{
+	// Need to destroy all of the current nodes in the world.
+	RemoveAllNodes();
+	NodePositions.Empty();
+	// Then create and place all the nodes and store them in the Nodes array.
+	for (int Y = 0; Y < MapHeight; Y++)
+	{
+		for (int X = 0; X < MapWidth; X++)
+		{
+			// Spawn the node in
+			if (ANavigationNode* Node = GetWorld()->SpawnActor<ANavigationNode>())
+			{
+				Node->SetActorLocation(LandscapeVertexData[Y * MapWidth + X]);
+				Nodes.Add(Node);
+				NodePositions.Add(Node->GetActorLocation());
+				
+			} else
+			{
+				UE_LOG(LogTemp, Error, TEXT("Unable to spawn a node for some reason. This is bad!"))
+			}
+			
+		}
+	}
+	// Then add connections between all adjacent nodes.
+	for (int Y = 0; Y < MapHeight; Y++)
+	{
+		for (int X = 0; X < MapWidth; X++)
+		{
+			if (ANavigationNode* CurrentNode = Nodes[Y * MapWidth + X]) // Make sure it's a valid ptr.
+				{
+				// ADD CONNECTIONS:
+				// Add Left
+				if (X != MapWidth-1)
+					CurrentNode->ConnectedNodes.Add(Nodes[Y * MapWidth + X+1]);
+				// Add Up
+				if (Y != MapHeight-1)
+					CurrentNode->ConnectedNodes.Add(Nodes[(Y+1) * MapWidth + X]);
+				// Add Right
+				if (X != 0)
+					CurrentNode->ConnectedNodes.Add(Nodes[Y * MapWidth + X-1]);
+				// Add Down
+				if (Y != 0)
+					CurrentNode->ConnectedNodes.Add(Nodes[(Y-1) * MapWidth + X]);
+				// Add UpLeft
+				if (X != MapWidth-1 && Y != MapHeight-1)
+					CurrentNode->ConnectedNodes.Add(Nodes[(Y+1) * MapWidth + X+1]);
+				// Add UpRight
+				if (X != 0 && Y != MapHeight-1)
+					CurrentNode->ConnectedNodes.Add(Nodes[(Y+1) * MapWidth + X-1]);
+				// Add DownRight
+				if (X != 0 && Y != 0)
+					CurrentNode->ConnectedNodes.Add(Nodes[(Y-1) * MapWidth+ X-1]);
+				// Add DownLeft
+				if (X != MapWidth-1 && Y != 0)
+					CurrentNode->ConnectedNodes.Add(Nodes[(Y-1) * MapWidth + X+1]);
+				}
+		}
+	}
+
+	PopulateNodes();
+}
+
+void UPathfindingSubsystem::ServerPlaceProceduralNodes_Implementation(const TArray<FVector>& LandscapeVertexData,
+	int32 MapWidth, int32 MapHeight)
+{
+	PlaceProceduralNodesImplementation(LandscapeVertexData, MapWidth, MapHeight);
 }

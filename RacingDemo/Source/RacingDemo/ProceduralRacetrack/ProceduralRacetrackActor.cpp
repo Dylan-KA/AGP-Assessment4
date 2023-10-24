@@ -78,7 +78,7 @@ void AProceduralRacetrackActor::GenerateGrid()
 	if(PathfindingSubsystem)
 	{
 		PathfindingSubsystem->PlaceProceduralNodes(Vertices, Width, Height);
-		Waypoints = PathfindingSubsystem->GetWaypointPositions();
+		Waypoints = PathfindingSubsystem->GetNodePositions();
 	}
 }
 
