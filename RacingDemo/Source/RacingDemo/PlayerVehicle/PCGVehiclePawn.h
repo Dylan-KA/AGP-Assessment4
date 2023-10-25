@@ -67,27 +67,29 @@ public:
 	APCGVehiclePawn();
 
 	// Current stats of the vehicle
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Replicated)
 	FVehicleStats VehicleStats;
 
 	// Vehicle HUD
 	UPROPERTY()
 	UVehicleHUD* VehicleHUD;
 
+	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 	// Current rarity of the vehicle
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Replicated)
 	EVehicleRarity VehicleRarity;
-
+	
 	// ProceduralComponent
-	UPROPERTY()
+	UPROPERTY(Replicated, Replicated)
 	UProceduralComponent* ProceduralComponent;
 
 	// FuelComponent
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Replicated)
 	UFuelComponent* FuelComponent;
 	
 	// ChaosVehicleMovementComponent used for getting current speed of vehicle
@@ -95,7 +97,7 @@ protected:
 	UChaosVehicleMovementComponent* MyVehicleMovementComponent;
 
 	// Procedural Vehicle Material
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Replicated)
 	UMaterialInterface* ProceduralMaterial;
 
 	// Generates and applies a procedural material
@@ -104,13 +106,13 @@ protected:
 	void GenerateProceduralMaterial();
 	
 	// Under-glow light components
-	UPROPERTY(VisibleDefaultsOnly)
+	UPROPERTY(VisibleDefaultsOnly, Replicated)
 	UPointLightComponent* FrontLightComponent;
-	UPROPERTY(VisibleDefaultsOnly)
+	UPROPERTY(VisibleDefaultsOnly, Replicated)
 	UPointLightComponent* BackLightComponent;
-	UPROPERTY(VisibleDefaultsOnly)
+	UPROPERTY(VisibleDefaultsOnly, Replicated)
 	UPointLightComponent* LeftLightComponent;
-	UPROPERTY(VisibleDefaultsOnly)
+	UPROPERTY(VisibleDefaultsOnly, Replicated)
 	UPointLightComponent* RightLightComponent;
 	
 	// Initialises and attaches all light components to the vehicle

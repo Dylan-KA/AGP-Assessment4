@@ -17,12 +17,16 @@ public:
 	// Sets default values for this component's properties
 	UFuelComponent();
 
+	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
 	// Current fuel capacity, if out of fuel then cannot drive
+	UPROPERTY(Replicated)
 	float CurrentFuel = 0.0f;
+	UPROPERTY(Replicated)
 	bool bIsOutOfFuel = false;
 	
 	

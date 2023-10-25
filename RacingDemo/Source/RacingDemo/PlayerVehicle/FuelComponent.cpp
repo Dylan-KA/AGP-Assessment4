@@ -2,6 +2,7 @@
 
 
 #include "FuelComponent.h"
+#include "Net/UnrealNetwork.h"
 #include "WheeledVehiclePawn.h"
 
 // Sets default values for this component's properties
@@ -16,6 +17,14 @@ UFuelComponent::UFuelComponent()
 		MyVehicleMovementComponent = WheeledVehiclePawn->GetVehicleMovementComponent();
 	}
 
+}
+
+void UFuelComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME_CONDITION(UFuelComponent, CurrentFuel, COND_SimulatedOnly);
+	DOREPLIFETIME_CONDITION(UFuelComponent, bIsOutOfFuel, COND_SimulatedOnly);
 }
 
 // Called when the game starts

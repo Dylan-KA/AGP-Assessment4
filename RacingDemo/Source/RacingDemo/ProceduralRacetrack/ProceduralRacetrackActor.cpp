@@ -166,8 +166,8 @@ void AProceduralRacetrackActor::RandomiseCheckpoint()
 
 void AProceduralRacetrackActor::FindTrackPath()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Start: %s"), *StartPosition.ToString());
-	UE_LOG(LogTemp, Warning, TEXT("End: %s"), *EndPosition.ToString());
+	//UE_LOG(LogTemp, Warning, TEXT("Start: %s"), *StartPosition.ToString());
+	//UE_LOG(LogTemp, Warning, TEXT("End: %s"), *EndPosition.ToString());
 
 	// Fix track generation so the path doesn't backtrack over itself
 	// Find path from start point to checkpoints to end point
@@ -197,7 +197,7 @@ void AProceduralRacetrackActor::BuildTrack()
 			if (const URacingGameInstance* GameInstance =
 				GetWorld()->GetGameInstance<URacingGameInstance>())
 			{
-				UE_LOG(LogTemp, Warning, TEXT("End: %p"), GameInstance->GetRoadMeshClass());
+				//UE_LOG(LogTemp, Warning, TEXT("End: %p"), GameInstance->GetRoadMeshClass());
 
 				ARoadSplineMeshActor* RoadMeshActor = GetWorld()->SpawnActor<ARoadSplineMeshActor>(
 				GameInstance->GetRoadMeshClass(), PrevPosition,Rotation);

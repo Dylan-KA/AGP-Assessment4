@@ -2,6 +2,7 @@
 
 #include "PCGVehiclePawn.h"
 #include "ChaosVehicleMovementComponent.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 APCGVehiclePawn::APCGVehiclePawn()
@@ -13,13 +14,33 @@ APCGVehiclePawn::APCGVehiclePawn()
 	FuelComponent = CreateDefaultSubobject<UFuelComponent>("Fuel Component");
 	MyVehicleMovementComponent = GetVehicleMovementComponent();
 	SetupLightComponents();
+	
+	SetReplicates(true);
+	SetReplicateMovement(true);
+	
+}
+
+void APCGVehiclePawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	
+	DOREPLIFETIME_CONDITION(APCGVehiclePawn, FuelComponent, COND_SimulatedOnly);
+	DOREPLIFETIME_CONDITION(APCGVehiclePawn, ProceduralComponent, COND_SimulatedOnly);
+	DOREPLIFETIME_CONDITION(APCGVehiclePawn, ProceduralMaterial, COND_SimulatedOnly);
+	DOREPLIFETIME_CONDITION(APCGVehiclePawn, VehicleRarity, COND_SimulatedOnly);
+	DOREPLIFETIME_CONDITION(APCGVehiclePawn, VehicleStats, COND_SimulatedOnly);
+	DOREPLIFETIME_CONDITION(APCGVehiclePawn, FrontLightComponent, COND_SimulatedOnly);
+	DOREPLIFETIME_CONDITION(APCGVehiclePawn, BackLightComponent, COND_SimulatedOnly);
+	DOREPLIFETIME_CONDITION(APCGVehiclePawn, LeftLightComponent, COND_SimulatedOnly);
+	DOREPLIFETIME_CONDITION(APCGVehiclePawn, RightLightComponent, COND_SimulatedOnly);
+	
 }
 
 // Called when the game starts or when spawned
 void APCGVehiclePawn::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 	// Procedural setup
 	ProceduralComponent->GenerateRandomVehicle(VehicleRarity, VehicleStats);
 	ApplyWeightDistribution();
@@ -155,30 +176,38 @@ void APCGVehiclePawn::DrawUI()
 
 void APCGVehiclePawn::UpdateUI()
 {
-	if (MyVehicleMovementComponent->GetForwardSpeedMPH() > 0)
+	if (IsLocallyControlled())
 	{
-		VehicleHUD->SetSpeedText(MyVehicleMovementComponent->GetForwardSpeedMPH());
-	} else
-	{
-		// Prevents returning a negative speed when reversing
-		VehicleHUD->SetSpeedText(MyVehicleMovementComponent->GetForwardSpeedMPH() * -1);
-	}
+		if (!VehicleHUD)
+		{
+			UE_LOG(LogTemp, Error, TEXT("VehicleHUD is NULL"));
+			return;
+		}
+		
+		if (MyVehicleMovementComponent->GetForwardSpeedMPH() >= 0)
+		{
+			VehicleHUD->SetSpeedText(MyVehicleMovementComponent->GetForwardSpeedMPH());
+		} else
+		{
+			// Prevents returning a negative speed when reversing
+			VehicleHUD->SetSpeedText(MyVehicleMovementComponent->GetForwardSpeedMPH() * -1);
+		}
 	
-	if (MyVehicleMovementComponent->GetCurrentGear() > 0)
-	{
-		VehicleHUD->SetGearText(MyVehicleMovementComponent->GetCurrentGear());
-	} else
-	{
-		// Prevents returning a negative gear when reversing
-		VehicleHUD->SetGearText(MyVehicleMovementComponent->GetCurrentGear() * -1);
-	}
+		if (MyVehicleMovementComponent->GetCurrentGear() >= 0)
+		{
+			VehicleHUD->SetGearText(MyVehicleMovementComponent->GetCurrentGear());
+		} else
+		{
+			// Prevents returning a negative gear when reversing
+			VehicleHUD->SetGearText(MyVehicleMovementComponent->GetCurrentGear() * -1);
+		}
 
-	VehicleHUD->SetFuelText(FuelComponent->GetCurrentFuel());
+		VehicleHUD->SetFuelText(FuelComponent->GetCurrentFuel());
+	}
 }
 
 void APCGVehiclePawn::ManageFuel(float DeltaTime)
 {
-	VehicleHUD->SetFuelColour(FuelComponent->IsOutOfFuel());
 	if (FuelComponent->IsOutOfFuel())
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("Out of fuel"))
@@ -187,13 +216,18 @@ void APCGVehiclePawn::ManageFuel(float DeltaTime)
 	{
 		FuelComponent->UpdateFuelAmount(DeltaTime);
 	}
+	
+	if (VehicleHUD)
+	{
+		VehicleHUD->SetFuelColour(FuelComponent->IsOutOfFuel());
+	}
 }
 
 // Called every frame
 void APCGVehiclePawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	
 	UpdateUI();
 	ManageFuel(DeltaTime);
 	
