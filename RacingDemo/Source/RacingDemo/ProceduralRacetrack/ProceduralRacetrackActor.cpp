@@ -6,15 +6,20 @@
 #include "RacingDemo/GameManagers/RacingGameInstance.h"
 #include "Components/SplineMeshComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 AProceduralRacetrackActor::AProceduralRacetrackActor()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	bReplicates = true;
+	//SetReplicates(true);
 	
 	ProceduralMesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("Procedural Mesh"));
 	SetRootComponent(ProceduralMesh);
+
+	
 }
 
 FVector AProceduralRacetrackActor::GetStartPosition()
@@ -45,14 +50,41 @@ void AProceduralRacetrackActor::BeginPlay()
 void AProceduralRacetrackActor::GenerateRacetrackLevel()
 {
 	ClearTrack(); 
-	GenerateGrid();
-	InitialiseIndexes();
-	RandomiseStartAndEnd();
-	RandomiseCheckpoint();
-	FindTrackPath(); 
+	
+	// if on the server, generate the track and grid
+	if(GetNetMode() < ENetMode::NM_Client)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Generating Track - Server"))
+		GenerateGrid();
+		InitialiseIndexes();
+		RandomiseStartAndEnd();
+		RandomiseCheckpoint();
+		FindTrackPath();
+
+		UE_LOG(LogTemp, Warning, TEXT("Track: %d"), Track.Num());
+
+	}
+
+	// then spawn trees on both client and server
+	UE_LOG(LogTemp, Warning, TEXT("Spawning Track"))
+
+	if(GetNetMode() == ENetMode::NM_Client)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Replicated Track: %d"), Track.Num());
+	}
 	BuildTrack();
 	SpawnTrees();
 }
+
+
+
+void AProceduralRacetrackActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AProceduralRacetrackActor, Track);
+}
+
+
 
 // Called every frame
 void AProceduralRacetrackActor::Tick(float DeltaTime)
@@ -197,7 +229,6 @@ void AProceduralRacetrackActor::BuildTrack()
 			if (const URacingGameInstance* GameInstance =
 				GetWorld()->GetGameInstance<URacingGameInstance>())
 			{
-				UE_LOG(LogTemp, Warning, TEXT("End: %p"), GameInstance->GetRoadMeshClass());
 
 				ARoadSplineMeshActor* RoadMeshActor = GetWorld()->SpawnActor<ARoadSplineMeshActor>(
 				GameInstance->GetRoadMeshClass(), PrevPosition,Rotation);
@@ -256,6 +287,11 @@ void AProceduralRacetrackActor::ClearTrack()
 	Waypoints.Empty();
 	Track.Empty();
 }
+
+void AProceduralRacetrackActor::GenerateTreeSpawnPositions()
+{
+}
+
 
 
 void AProceduralRacetrackActor::SpawnTrees()
