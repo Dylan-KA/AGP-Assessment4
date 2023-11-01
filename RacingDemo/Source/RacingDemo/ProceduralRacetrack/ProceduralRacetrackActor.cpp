@@ -87,8 +87,8 @@ void AProceduralRacetrackActor::InitialiseIndexes()
 	// Clear Indexes
 	ClearIndexes();
 	// fill lists with the indexes of each node on the edge of the grid
-	UE_LOG(LogTemp, Warning, TEXT("Height : %d"), Height);
-	UE_LOG(LogTemp, Warning, TEXT("Width : %d"), Width);
+	//UE_LOG(LogTemp, Warning, TEXT("Height : %d"), Height);
+	//UE_LOG(LogTemp, Warning, TEXT("Width : %d"), Width);
 	
 	// ignore the left and right rows
 	for(int32 i = 1; i < Width - 1; i++)
@@ -120,10 +120,10 @@ void AProceduralRacetrackActor::InitialiseIndexes()
 		CentralIndexes.Add(i);
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("Left Edge Length: %d"), LeftEdgeIndexes.Num());
-	UE_LOG(LogTemp, Warning, TEXT("Right Edge Length: %d"), RightEdgeIndexes.Num());
-	UE_LOG(LogTemp, Warning, TEXT("Top Edge Length: %d"), RightEdgeIndexes.Num());
-	UE_LOG(LogTemp, Warning, TEXT("Bottom Edge Length: %d"), RightEdgeIndexes.Num());
+	//UE_LOG(LogTemp, Warning, TEXT("Left Edge Length: %d"), LeftEdgeIndexes.Num());
+	//UE_LOG(LogTemp, Warning, TEXT("Right Edge Length: %d"), RightEdgeIndexes.Num());
+	//UE_LOG(LogTemp, Warning, TEXT("Top Edge Length: %d"), RightEdgeIndexes.Num());
+	//UE_LOG(LogTemp, Warning, TEXT("Bottom Edge Length: %d"), RightEdgeIndexes.Num());
 }
 
 void AProceduralRacetrackActor::ClearIndexes()

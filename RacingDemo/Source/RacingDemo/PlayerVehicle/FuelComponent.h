@@ -29,7 +29,6 @@ protected:
 	UPROPERTY(Replicated)
 	bool bIsOutOfFuel = false;
 	
-	
 	// ChaosVehicleMovementComponent used for getting current speed of vehicle
 	UPROPERTY()
 	UChaosVehicleMovementComponent* MyVehicleMovementComponent;

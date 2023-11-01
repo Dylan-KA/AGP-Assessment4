@@ -84,7 +84,7 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Replicated)
 	EVehicleRarity VehicleRarity;
 	
-	// ProceduralComponent
+	// ProceduralComponent is responsible for generating the rarity and stats of the vehicle
 	UPROPERTY(Replicated, Replicated)
 	UProceduralComponent* ProceduralComponent;
 
@@ -97,7 +97,7 @@ protected:
 	UChaosVehicleMovementComponent* MyVehicleMovementComponent;
 
 	// Procedural Vehicle Material
-	UPROPERTY(VisibleAnywhere, Replicated)
+	UPROPERTY(VisibleAnywhere)
 	UMaterialInterface* ProceduralMaterial;
 
 	// Generates and applies a procedural material
@@ -144,4 +144,8 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "PCG Vehicle Pawn")
 	void ApplyWeightDistribution();
 
+private:
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastProcedural();
+	
 };

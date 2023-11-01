@@ -3,6 +3,8 @@
 #include "PCGVehiclePawn.h"
 #include "ChaosVehicleMovementComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "UObject/Class.h"
+#include "RacingDemo/RacingDemo.h"
 
 // Sets default values
 APCGVehiclePawn::APCGVehiclePawn()
@@ -15,7 +17,7 @@ APCGVehiclePawn::APCGVehiclePawn()
 	MyVehicleMovementComponent = GetVehicleMovementComponent();
 	SetupLightComponents();
 	
-	SetReplicates(true);
+	bReplicates = true;
 	SetReplicateMovement(true);
 	
 }
@@ -24,15 +26,14 @@ void APCGVehiclePawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	
-	DOREPLIFETIME_CONDITION(APCGVehiclePawn, FuelComponent, COND_SimulatedOnly);
-	DOREPLIFETIME_CONDITION(APCGVehiclePawn, ProceduralComponent, COND_SimulatedOnly);
-	DOREPLIFETIME_CONDITION(APCGVehiclePawn, ProceduralMaterial, COND_SimulatedOnly);
-	DOREPLIFETIME_CONDITION(APCGVehiclePawn, VehicleRarity, COND_SimulatedOnly);
-	DOREPLIFETIME_CONDITION(APCGVehiclePawn, VehicleStats, COND_SimulatedOnly);
-	DOREPLIFETIME_CONDITION(APCGVehiclePawn, FrontLightComponent, COND_SimulatedOnly);
-	DOREPLIFETIME_CONDITION(APCGVehiclePawn, BackLightComponent, COND_SimulatedOnly);
-	DOREPLIFETIME_CONDITION(APCGVehiclePawn, LeftLightComponent, COND_SimulatedOnly);
-	DOREPLIFETIME_CONDITION(APCGVehiclePawn, RightLightComponent, COND_SimulatedOnly);
+	DOREPLIFETIME(APCGVehiclePawn, FuelComponent);
+	DOREPLIFETIME(APCGVehiclePawn, ProceduralComponent);
+	DOREPLIFETIME(APCGVehiclePawn, VehicleRarity);
+	DOREPLIFETIME(APCGVehiclePawn, VehicleStats);
+	DOREPLIFETIME(APCGVehiclePawn, FrontLightComponent);
+	DOREPLIFETIME(APCGVehiclePawn, BackLightComponent);
+	DOREPLIFETIME(APCGVehiclePawn, LeftLightComponent);
+	DOREPLIFETIME(APCGVehiclePawn, RightLightComponent);
 	
 }
 
@@ -42,14 +43,17 @@ void APCGVehiclePawn::BeginPlay()
 	Super::BeginPlay();
 	
 	// Procedural setup
-	ProceduralComponent->GenerateRandomVehicle(VehicleRarity, VehicleStats);
-	ApplyWeightDistribution();
-	GenerateProceduralMaterial();
-	SetUnderGlowColour();
-	FuelComponent->SetCurrentFuel(VehicleStats.MaxFuelCapacity);
-
-	DrawUI();
-	
+	if (GetLocalRole() == ROLE_Authority)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Has AUTHORITY in BeginPlay"))
+		ProceduralComponent->GenerateRandomVehicle(VehicleRarity, VehicleStats);
+		ApplyWeightDistribution();
+		//GenerateProceduralMaterial();
+		SetUnderGlowColour();
+		FuelComponent->SetCurrentFuel(VehicleStats.MaxFuelCapacity);
+		
+		MulticastProcedural();
+	}
 }
 
 // Generates and applies a procedural material
@@ -238,4 +242,19 @@ void APCGVehiclePawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	
+}
+
+void APCGVehiclePawn::MulticastProcedural_Implementation()
+{
+	FText EnumDisplayName = UEnum::GetDisplayValueAsText(VehicleRarity);
+	UE_LOG(LogTemp, Warning, TEXT("REPLICATED ON CLIENT: %s %s"), *EnumDisplayName.ToString(), *VehicleStats.ToString())
+	
+	// This code runs on clients, not the server
+	UE_LOG(LogTemp, Warning, TEXT("Generating Procedural Material"))
+	GenerateProceduralMaterial();
+
+	ApplyWeightDistribution();
+	SetUnderGlowColour();
+	FuelComponent->SetCurrentFuel(VehicleStats.MaxFuelCapacity);
+	DrawUI();
 }

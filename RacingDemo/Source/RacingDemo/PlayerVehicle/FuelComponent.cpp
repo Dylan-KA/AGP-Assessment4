@@ -23,8 +23,8 @@ void UFuelComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME_CONDITION(UFuelComponent, CurrentFuel, COND_SimulatedOnly);
-	DOREPLIFETIME_CONDITION(UFuelComponent, bIsOutOfFuel, COND_SimulatedOnly);
+	DOREPLIFETIME(UFuelComponent, CurrentFuel);
+	DOREPLIFETIME(UFuelComponent, bIsOutOfFuel);
 }
 
 // Called when the game starts
