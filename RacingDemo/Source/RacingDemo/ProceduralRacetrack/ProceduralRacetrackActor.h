@@ -112,7 +112,11 @@ private:
 	FVector Checkpoint1;
 	FVector Checkpoint2;
 	FVector EndPosition;
-	
+
+
+	// Replicate this variable to all clients
+	UPROPERTY(Replicated)
+	float Number = 0;
 	// Replicate this variable to all clients
 	UPROPERTY(Replicated)
 	TArray<FVector> Track;

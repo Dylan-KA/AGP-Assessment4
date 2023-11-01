@@ -14,7 +14,6 @@ AProceduralRacetrackActor::AProceduralRacetrackActor()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = true;
-	//SetReplicates(true);
 	
 	ProceduralMesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("Procedural Mesh"));
 	SetRootComponent(ProceduralMesh);
@@ -36,6 +35,8 @@ FVector AProceduralRacetrackActor::GetEndPosition()
 void AProceduralRacetrackActor::BeginPlay()
 {
 	Super::BeginPlay();
+	UE_LOG(LogTemp, Error, TEXT("Procedural Racetrack BeginPlay "))
+
 	PathfindingSubsystem = GetWorld()->GetSubsystem<UPathfindingSubsystem>();
 	if(PathfindingSubsystem)
 	{
@@ -49,29 +50,38 @@ void AProceduralRacetrackActor::BeginPlay()
 
 void AProceduralRacetrackActor::GenerateRacetrackLevel()
 {
-	ClearTrack(); 
 	
+	
+	//UE_LOG(LogTemp, Warning, TEXT("Generating Track - %s") )
+
 	// if on the server, generate the track and grid
 	if(GetNetMode() < ENetMode::NM_Client)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Generating Track - Server"))
+		//ClearTrack();
 		GenerateGrid();
 		InitialiseIndexes();
 		RandomiseStartAndEnd();
 		RandomiseCheckpoint();
 		FindTrackPath();
 
+		// debugging
+		Number = 5;
 		UE_LOG(LogTemp, Warning, TEXT("Track: %d"), Track.Num());
-
+		UE_LOG(LogTemp, Warning, TEXT("Number: %f"), Number);
 	}
 
-	// then spawn trees on both client and server
+
 	UE_LOG(LogTemp, Warning, TEXT("Spawning Track"))
 
 	if(GetNetMode() == ENetMode::NM_Client)
 	{
+		// debugging
 		UE_LOG(LogTemp, Warning, TEXT("Replicated Track: %d"), Track.Num());
+		UE_LOG(LogTemp, Warning, TEXT("Number: %f"), Number);
 	}
+	
+	// spawn static meshes
 	BuildTrack();
 	SpawnTrees();
 }
@@ -82,6 +92,8 @@ void AProceduralRacetrackActor::GetLifetimeReplicatedProps(TArray<FLifetimePrope
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AProceduralRacetrackActor, Track);
+	DOREPLIFETIME(AProceduralRacetrackActor, Number);
+
 }
 
 
