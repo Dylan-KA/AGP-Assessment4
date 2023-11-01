@@ -70,5 +70,9 @@ Build/*/**
 **/Intermediate/*
 **Plugins/*/Intermediate/*
 
+# Include Unreal Engine assets
+!Content/**/*.uasset
+!Content/**/*.umap
+
 # Cache files for the editor to use
 DerivedDataCache/*
