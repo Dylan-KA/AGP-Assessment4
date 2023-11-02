@@ -70,18 +70,14 @@ protected:
 	
 	UPROPERTY(EditAnywhere)
 	bool bShouldRegenerate;
-
-	/**
-	 * A function that is needed to be overriden in order to replicate any variables marked as a UPROPERTY(Replicated).
-	 * It is just one of Unreal Engine quirks that needs to be done.
-	 */
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 private:
+	float Time;
+	bool hasGenerated = false; 
 	// Loop through width and height to get the appropriate grid positions
 	void GenerateGrid();
 	// Find the top, bottom, left and right edge indexes and store them in the appropriate array
@@ -93,7 +89,7 @@ private:
 	void FindTrackPath();
 	// spawns in road meshes
 	// run this on server and client
-	void BuildTrack();
+	void SpawnTrack();
 	void ClearTrack();
 	void GenerateTreeSpawnPositions();
 	void SpawnTrees();
@@ -112,15 +108,16 @@ private:
 	FVector Checkpoint1;
 	FVector Checkpoint2;
 	FVector EndPosition;
-
-
-	// Replicate this variable to all clients
-	UPROPERTY(Replicated)
-	float Number = 0;
-	// Replicate this variable to all clients
-	UPROPERTY(Replicated)
+	
+	
 	TArray<FVector> Track;
 	// Replicate this variable to all clients
 	//TArray<FVector> TreeSpawnPositions;
+
+	void GenerateTrackImplementation(FVector Start, FVector End, FVector Point1, FVector Point2);
+	UFUNCTION(Server, Reliable)
+	void ServerGenerateTrack(FVector Start, FVector End, FVector Point1, FVector Point2);
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastGenerateTrack(FVector Start, FVector End, FVector Point1, FVector Point2);
 
 };

@@ -13,12 +13,9 @@ AProceduralRacetrackActor::AProceduralRacetrackActor()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	bReplicates = true;
 	
 	ProceduralMesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("Procedural Mesh"));
 	SetRootComponent(ProceduralMesh);
-
-	
 }
 
 FVector AProceduralRacetrackActor::GetStartPosition()
@@ -35,74 +32,61 @@ FVector AProceduralRacetrackActor::GetEndPosition()
 void AProceduralRacetrackActor::BeginPlay()
 {
 	Super::BeginPlay();
-	UE_LOG(LogTemp, Error, TEXT("Procedural Racetrack BeginPlay "))
+	UE_LOG(LogTemp, Warning, TEXT("Procedural Racetrack BeginPlay"))
 
 	PathfindingSubsystem = GetWorld()->GetSubsystem<UPathfindingSubsystem>();
 	if(PathfindingSubsystem)
 	{
-		GenerateRacetrackLevel();
+		//GenerateRacetrackLevel();
 	}
 	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("Can't find the pathfinding subsystem"))
 	}
+	UE_LOG(LogTemp, Warning, TEXT("Begin Play Finished: %d"), GetNetMode()); 
+
 }
 
 void AProceduralRacetrackActor::GenerateRacetrackLevel()
 {
-	
-	
 	//UE_LOG(LogTemp, Warning, TEXT("Generating Track - %s") )
 
 	// if on the server, generate the track and grid
 	if(GetNetMode() < ENetMode::NM_Client)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Generating Track - Server"))
-		//ClearTrack();
+		ClearTrack();
 		GenerateGrid();
 		InitialiseIndexes();
 		RandomiseStartAndEnd();
 		RandomiseCheckpoint();
+		// RPC to generate track on server and multicast to client
 		FindTrackPath();
-
-		// debugging
-		Number = 5;
-		UE_LOG(LogTemp, Warning, TEXT("Track: %d"), Track.Num());
-		UE_LOG(LogTemp, Warning, TEXT("Number: %f"), Number);
 	}
 
 
-	UE_LOG(LogTemp, Warning, TEXT("Spawning Track"))
-
-	if(GetNetMode() == ENetMode::NM_Client)
-	{
-		// debugging
-		UE_LOG(LogTemp, Warning, TEXT("Replicated Track: %d"), Track.Num());
-		UE_LOG(LogTemp, Warning, TEXT("Number: %f"), Number);
-	}
-	
-	// spawn static meshes
-	BuildTrack();
-	SpawnTrees();
-}
-
-
-
-void AProceduralRacetrackActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME(AProceduralRacetrackActor, Track);
-	DOREPLIFETIME(AProceduralRacetrackActor, Number);
 
 }
-
-
 
 // Called every frame
 void AProceduralRacetrackActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	Time += DeltaTime;
+	//UE_LOG(LogTemp, Error, TEXT("Time: %f"), Time)
 
+	if(Time > 5 && !hasGenerated)
+	{
+		if(PathfindingSubsystem)
+		{
+			hasGenerated = true; 
+			GenerateRacetrackLevel(); 
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Can't find the pathfinding subsystem"))
+		}
+	}
 }
 
 void AProceduralRacetrackActor::GenerateGrid()
@@ -210,20 +194,17 @@ void AProceduralRacetrackActor::RandomiseCheckpoint()
 
 void AProceduralRacetrackActor::FindTrackPath()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Start: %s"), *StartPosition.ToString());
-	UE_LOG(LogTemp, Warning, TEXT("End: %s"), *EndPosition.ToString());
-
-	// Fix track generation so the path doesn't backtrack over itself
-	// Find path from start point to checkpoints to end point
-	Track = PathfindingSubsystem->GetPath(StartPosition, Checkpoint1);
-	Track.Pop(); 
-	Track.Append(PathfindingSubsystem->GetPath(Checkpoint1, Checkpoint2));
-	Track.Pop(); 
-	Track.Append(PathfindingSubsystem->GetPath(Checkpoint2, EndPosition));
+	ServerGenerateTrack(StartPosition, EndPosition, Checkpoint1, Checkpoint2);
 }
 
-void AProceduralRacetrackActor::BuildTrack()
+void AProceduralRacetrackActor::SpawnTrack()
 {
+	UE_LOG(LogTemp, Warning, TEXT("Spawn Track Implementation"));
+	UE_LOG(LogTemp, Warning, TEXT("Netmode: %d"), GetNetMode());
+	UE_LOG(LogTemp, Warning, TEXT("Track Length: %d"), Track.Num());
+
+
+
 	FVector PrevPosition;
 	// for every point on the track spawn in a road mesh 
 	for (int32 i = 0; i < Track.Num(); i++)
@@ -262,9 +243,6 @@ void AProceduralRacetrackActor::BuildTrack()
 				{
 					StartFlagMeshComponent->SetStaticMesh(StartFlagMesh);
 				}
-
-				// Spawn PlayerStart
-				// PlayerStart = GetWorld()->SpawnActor<APlayerStart>(PrevPosition, Rotation);
 				
 			}
 		}
@@ -302,6 +280,7 @@ void AProceduralRacetrackActor::ClearTrack()
 
 void AProceduralRacetrackActor::GenerateTreeSpawnPositions()
 {
+	
 }
 
 
@@ -371,5 +350,36 @@ FVector AProceduralRacetrackActor::GetPointOnEdge(int32 EdgeIndex)
 		Position = Waypoints[RightEdgeIndexes[FMath::RandRange(0,RightEdgeIndexes.Num() - 1)]];
 	}
 	return Position;
+}
+
+void AProceduralRacetrackActor::GenerateTrackImplementation(FVector Start, FVector End, FVector Point1, FVector Point2)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Start: %s"), *StartPosition.ToString());
+	UE_LOG(LogTemp, Warning, TEXT("End: %s"), *EndPosition.ToString());
+
+	// Fix track generation so the path doesn't backtrack over itself
+	// Find path from start point to checkpoints to end point
+	Track = PathfindingSubsystem->GetPath(Start, Point1);
+	Track.Pop(); 
+	Track.Append(PathfindingSubsystem->GetPath(Point1, Point2));
+	Track.Pop(); 
+	Track.Append(PathfindingSubsystem->GetPath(Point2, End));
+	SpawnTrack();
+}
+
+void AProceduralRacetrackActor::MulticastGenerateTrack_Implementation(FVector Start, FVector End, FVector Point1, FVector Point2)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Multicasting Track"));
+	UE_LOG(LogTemp, Warning, TEXT("Netmode: %d"), GetNetMode());
+
+	// Generate Track for all clients
+	GenerateTrackImplementation(Start, End, Point1, Point2);
+}
+
+void AProceduralRacetrackActor::ServerGenerateTrack_Implementation(FVector Start, FVector End, FVector Point1, FVector Point2)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Server Generating Track"));
+	//Generate track for server
+	MulticastGenerateTrack(Start, End, Point1, Point2);	
 }
 
