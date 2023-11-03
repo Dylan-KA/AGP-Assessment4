@@ -5,10 +5,23 @@
 #include "CoreMinimal.h"
 #include "Engine/StaticMeshActor.h"
 #include "GameFramework/Actor.h"
-//#include "GameFramework/PlayerStart.h"
 #include "RacingDemo/Pathfinding/PathfindingSubsystem.h"
 #include "RoadSplineMeshActor.h"
 #include "ProceduralRacetrackActor.generated.h"
+
+USTRUCT()
+struct FTree
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY()
+	FVector Position;
+	UPROPERTY()
+	FRotator Rotation;
+	UPROPERTY()
+	int32 MeshIndex; 
+};
+
 
 class UProceduralMeshComponent;
 UCLASS()
@@ -22,10 +35,11 @@ public:
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	FVector GetStartPosition();
+	FVector GetStartPosition() const;
 
-	FVector GetEndPosition();
-	
+	FVector GetEndPosition() const;
+
+	bool HasGenerated() const;
 
 protected:
 	// Called when the game starts or when spawned
@@ -60,19 +74,16 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UStaticMesh* StartFlagMesh;
 
-	//UPROPERTY()
-	//APlayerStart* PlayerStart; 
-
 	// Meshes 
 	UPROPERTY()
 	TArray<ARoadSplineMeshActor*> RoadMeshActors;
 	UPROPERTY()
-	TArray<AStaticMeshActor*> TreeMeshesActors;
+	TArray<AStaticMeshActor*> TreeMeshActors;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<UStaticMesh*> TreeMeshes;
 	
 	UPROPERTY(EditAnywhere)
-	bool bShouldRegenerate = true;
+	bool bHasGenerated = false;
 	
 public:	
 	// Called every frame
@@ -87,15 +98,17 @@ private:
 	void ClearIndexes();
 	void RandomiseStartAndEnd();
 	void RandomiseCheckpoint();
-	void FindTrackPath();
+	// Pathfinding to get track 
+	void GenerateTrack();
+	void GenerateTrees();
+
 	// spawns in road meshes
 	void SpawnTrack();
 	void ClearTrack();
-	
 	// spawns in trees 
-	void GenerateTreeSpawnPositions();
 	void SpawnTrees();
-	
+
+	// helper function 
 	FVector GetPointOnEdge(int32 EdgeIndex);
 
 	// Indexes of Grid
@@ -111,17 +124,13 @@ private:
 	FVector Checkpoint2;
 	FVector EndPosition;
 
+	// Replicated properties
 	// Track is generated on server and replicated to clients
 	UPROPERTY(Replicated)
 	TArray<FVector> Track;
+	// Tree values include position, rotation and mesh type
+	UPROPERTY(Replicated)
+	TArray<FTree> TreeValues;
 	
-	// Replicate this variable to all clients
-	//TArray<FVector> TreeSpawnPositions;
-
-	/*void GenerateTrackImplementation(FVector Start, FVector End, FVector Point1, FVector Point2);
-	UFUNCTION(Server, Reliable)
-	void ServerGenerateTrack(FVector Start, FVector End, FVector Point1, FVector Point2);
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastGenerateTrack(FVector Start, FVector End, FVector Point1, FVector Point2);*/
 
 };
