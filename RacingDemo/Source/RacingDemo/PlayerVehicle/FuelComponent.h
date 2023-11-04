@@ -24,9 +24,9 @@ protected:
 	virtual void BeginPlay() override;
 
 	// Current fuel capacity, if out of fuel then cannot drive
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	float CurrentFuel = 0.0f;
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	bool bIsOutOfFuel = false;
 	
 	// ChaosVehicleMovementComponent used for getting current speed of vehicle
