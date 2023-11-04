@@ -4,7 +4,6 @@
 #include "ChaosVehicleMovementComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "UObject/Class.h"
-#include "RacingDemo/RacingDemo.h"
 
 // Sets default values
 APCGVehiclePawn::APCGVehiclePawn()
@@ -17,23 +16,11 @@ APCGVehiclePawn::APCGVehiclePawn()
 	MyVehicleMovementComponent = GetVehicleMovementComponent();
 	SetupLightComponents();
 	
-	bReplicates = true;
-	SetReplicateMovement(true);
-	
 }
 
 void APCGVehiclePawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	
-	DOREPLIFETIME(APCGVehiclePawn, FuelComponent);
-	DOREPLIFETIME(APCGVehiclePawn, ProceduralComponent);
-	DOREPLIFETIME(APCGVehiclePawn, VehicleRarity);
-	DOREPLIFETIME(APCGVehiclePawn, VehicleStats);
-	DOREPLIFETIME(APCGVehiclePawn, FrontLightComponent);
-	DOREPLIFETIME(APCGVehiclePawn, BackLightComponent);
-	DOREPLIFETIME(APCGVehiclePawn, LeftLightComponent);
-	DOREPLIFETIME(APCGVehiclePawn, RightLightComponent);
 	
 }
 
@@ -42,18 +29,13 @@ void APCGVehiclePawn::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	// Procedural setup
-	if (GetLocalRole() == ROLE_Authority)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Has AUTHORITY in BeginPlay"))
-		ProceduralComponent->GenerateRandomVehicle(VehicleRarity, VehicleStats);
-		ApplyWeightDistribution();
-		//GenerateProceduralMaterial();
-		SetUnderGlowColour();
-		FuelComponent->SetCurrentFuel(VehicleStats.MaxFuelCapacity);
-		
-		MulticastProcedural();
-	}
+	ProceduralComponent->GenerateRandomVehicle(VehicleRarity, VehicleStats);
+	ApplyWeightDistribution();
+	GenerateProceduralMaterial();
+	SetUnderGlowColour();
+	FuelComponent->SetCurrentFuel(VehicleStats.MaxFuelCapacity);
+	DrawUI();
+
 }
 
 // Generates and applies a procedural material
@@ -164,7 +146,7 @@ void APCGVehiclePawn::SetUnderGlowColour() const
 
 void APCGVehiclePawn::DrawUI()
 {
-	if (IsLocallyControlled() && VehicleHUDClass)
+	if (VehicleHUDClass)
 	{
 		if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
 		{
@@ -180,34 +162,31 @@ void APCGVehiclePawn::DrawUI()
 
 void APCGVehiclePawn::UpdateUI()
 {
-	if (IsLocallyControlled())
+	if (!VehicleHUD)
 	{
-		if (!VehicleHUD)
-		{
-			UE_LOG(LogTemp, Error, TEXT("VehicleHUD is NULL"));
-			return;
-		}
-		
-		if (MyVehicleMovementComponent->GetForwardSpeedMPH() >= 0)
-		{
-			VehicleHUD->SetSpeedText(MyVehicleMovementComponent->GetForwardSpeedMPH());
-		} else
-		{
-			// Prevents returning a negative speed when reversing
-			VehicleHUD->SetSpeedText(MyVehicleMovementComponent->GetForwardSpeedMPH() * -1);
-		}
-	
-		if (MyVehicleMovementComponent->GetCurrentGear() >= 0)
-		{
-			VehicleHUD->SetGearText(MyVehicleMovementComponent->GetCurrentGear());
-		} else
-		{
-			// Prevents returning a negative gear when reversing
-			VehicleHUD->SetGearText(MyVehicleMovementComponent->GetCurrentGear() * -1);
-		}
-
-		VehicleHUD->SetFuelText(FuelComponent->GetCurrentFuel());
+		UE_LOG(LogTemp, Error, TEXT("VehicleHUD is NULL"));
+		return;
 	}
+		
+	if (MyVehicleMovementComponent->GetForwardSpeedMPH() >= 0)
+	{
+		VehicleHUD->SetSpeedText(MyVehicleMovementComponent->GetForwardSpeedMPH());
+	} else
+	{
+		// Prevents returning a negative speed when reversing
+		VehicleHUD->SetSpeedText(MyVehicleMovementComponent->GetForwardSpeedMPH() * -1);
+	}
+	
+	if (MyVehicleMovementComponent->GetCurrentGear() >= 0)
+	{
+		VehicleHUD->SetGearText(MyVehicleMovementComponent->GetCurrentGear());
+	} else
+	{
+		// Prevents returning a negative gear when reversing
+		VehicleHUD->SetGearText(MyVehicleMovementComponent->GetCurrentGear() * -1);
+	}
+
+	VehicleHUD->SetFuelText(FuelComponent->GetCurrentFuel());
 }
 
 void APCGVehiclePawn::ManageFuel(float DeltaTime)
@@ -232,8 +211,8 @@ void APCGVehiclePawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
-	UpdateUI();
 	ManageFuel(DeltaTime);
+	UpdateUI();
 	
 }
 
@@ -244,17 +223,3 @@ void APCGVehiclePawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	
 }
 
-void APCGVehiclePawn::MulticastProcedural_Implementation()
-{
-	FText EnumDisplayName = UEnum::GetDisplayValueAsText(VehicleRarity);
-	UE_LOG(LogTemp, Warning, TEXT("REPLICATED ON CLIENT: %s %s"), *EnumDisplayName.ToString(), *VehicleStats.ToString())
-	
-	// This code runs on clients, not the server
-	UE_LOG(LogTemp, Warning, TEXT("Generating Procedural Material"))
-	GenerateProceduralMaterial();
-
-	ApplyWeightDistribution();
-	SetUnderGlowColour();
-	FuelComponent->SetCurrentFuel(VehicleStats.MaxFuelCapacity);
-	DrawUI();
-}

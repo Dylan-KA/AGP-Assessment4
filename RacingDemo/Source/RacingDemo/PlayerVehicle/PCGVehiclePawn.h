@@ -67,7 +67,7 @@ public:
 	APCGVehiclePawn();
 
 	// Current stats of the vehicle
-	UPROPERTY(BlueprintReadOnly, Replicated)
+	UPROPERTY(BlueprintReadOnly)
 	FVehicleStats VehicleStats;
 
 	// Vehicle HUD
@@ -81,15 +81,15 @@ protected:
 	virtual void BeginPlay() override;
 
 	// Current rarity of the vehicle
-	UPROPERTY(BlueprintReadOnly, Replicated)
+	UPROPERTY(BlueprintReadOnly)
 	EVehicleRarity VehicleRarity;
 	
 	// ProceduralComponent is responsible for generating the rarity and stats of the vehicle
-	UPROPERTY(Replicated, Replicated)
+	UPROPERTY()
 	UProceduralComponent* ProceduralComponent;
 
 	// FuelComponent
-	UPROPERTY(BlueprintReadOnly, Replicated)
+	UPROPERTY(BlueprintReadOnly)
 	UFuelComponent* FuelComponent;
 	
 	// ChaosVehicleMovementComponent used for getting current speed of vehicle
@@ -106,13 +106,13 @@ protected:
 	void GenerateProceduralMaterial();
 	
 	// Under-glow light components
-	UPROPERTY(VisibleDefaultsOnly, Replicated)
+	UPROPERTY(VisibleDefaultsOnly)
 	UPointLightComponent* FrontLightComponent;
-	UPROPERTY(VisibleDefaultsOnly, Replicated)
+	UPROPERTY(VisibleDefaultsOnly)
 	UPointLightComponent* BackLightComponent;
-	UPROPERTY(VisibleDefaultsOnly, Replicated)
+	UPROPERTY(VisibleDefaultsOnly)
 	UPointLightComponent* LeftLightComponent;
-	UPROPERTY(VisibleDefaultsOnly, Replicated)
+	UPROPERTY(VisibleDefaultsOnly)
 	UPointLightComponent* RightLightComponent;
 	
 	// Initialises and attaches all light components to the vehicle
@@ -145,7 +145,5 @@ public:
 	void ApplyWeightDistribution();
 
 private:
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastProcedural();
 	
 };
