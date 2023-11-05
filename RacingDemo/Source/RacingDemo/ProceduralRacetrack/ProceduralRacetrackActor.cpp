@@ -48,29 +48,36 @@ void AProceduralRacetrackActor::BeginPlay()
 	//UE_LOG(LogTemp, Warning, TEXT("BeginPlay Starting"));
 
 	PathfindingSubsystem = GetWorld()->GetSubsystem<UPathfindingSubsystem>();
+	if(PathfindingSubsystem)
+	{
+		GenerateRacetrackLevel(); 
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Can't find the pathfinding subsystem"))
+	}
 	//UE_LOG(LogTemp, Warning, TEXT("Begin Play Finished: %d"), GetNetMode()); 
 
 }
 
 void AProceduralRacetrackActor::GenerateRacetrackLevel()
 {
+	ClearTrackMeshes();
 	// if on the server generate the racetrack level details
 	if(GetNetMode() < ENetMode::NM_Client)
 	{
-		ClearTrack();
+		ClearTrackValues(); 
 		GenerateGrid();
 		InitialiseIndexes();
 		RandomiseStartAndEnd();
 		RandomiseCheckpoint();
-		// generate track and trees to be replicated across clients
 		GenerateTrack();
 		GenerateTrees();
+		SpawnTrack();
+		SpawnTrees();
 	}
 	// spawn the track and trees on both server and client
-	SpawnTrack();
-	SpawnTrees();
-
-
+	
 }
 
 // Called every frame
@@ -80,18 +87,10 @@ void AProceduralRacetrackActor::Tick(float DeltaTime)
 	Time += DeltaTime;
 	//UE_LOG(LogTemp, Error, TEXT("Time: %f"), Time)
 	// wait for both server and client begin play to finish before generating level
-	if(Time > 5 && !bHasGenerated)
-	{
-		if(PathfindingSubsystem)
-		{
-			bHasGenerated = true; 
-			GenerateRacetrackLevel(); 
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("Can't find the pathfinding subsystem"))
-		}
-	}
+	//if(Time > 5 && !bHasGenerated)
+	//{
+
+	//}
 }
 
 void AProceduralRacetrackActor::GenerateGrid()
@@ -103,9 +102,6 @@ void AProceduralRacetrackActor::GenerateGrid()
 			FVector VertexLocation = FVector(X * VertexSpacing, Y * VertexSpacing, 0.0f);
 			VertexLocation.Z += 0.1;
 			Vertices.Add(VertexLocation);
-			
-			// DrawDebugSphere(GetWorld(), VertexLocation, 50.0f, 8, FColor::Blue,
-			// 	true, -1, 0, 10.0f);
 		}
 	}
 	if(PathfindingSubsystem)
@@ -217,8 +213,7 @@ void AProceduralRacetrackActor::SpawnTrack()
 	UE_LOG(LogTemp, Warning, TEXT("Spawn Track Implementation"));
 	UE_LOG(LogTemp, Warning, TEXT("Netmode: %d"), GetNetMode());
 	UE_LOG(LogTemp, Warning, TEXT("Track Length: %d"), Track.Num());
-
-
+	
 
 	FVector PrevPosition;
 	// for every point on the track spawn in a road mesh 
@@ -263,10 +258,12 @@ void AProceduralRacetrackActor::SpawnTrack()
 		}
 		PrevPosition = CurrentPosition;
 	}
+	bHasGenerated = true;
 }
 
-void AProceduralRacetrackActor::ClearTrack()
+void AProceduralRacetrackActor::ClearTrackMeshes()
 {
+	// clear all spawned meshes
 	for (auto MeshActor : RoadMeshActors)
 	{
 		if(MeshActor)
@@ -274,7 +271,6 @@ void AProceduralRacetrackActor::ClearTrack()
 			MeshActor->Destroy();
 		}
 	}
-
 	for (auto MeshActor : TreeMeshActors)
 	{
 		if(MeshActor)
@@ -286,11 +282,18 @@ void AProceduralRacetrackActor::ClearTrack()
 	{
 		StartFlagMeshActor->Destroy();
 	}
+	
 	RoadMeshActors.Empty();
 	TreeMeshActors.Empty();
+}
+
+void AProceduralRacetrackActor::ClearTrackValues()
+{
+	// clear generated track values
 	Vertices.Empty();
 	Waypoints.Empty();
 	Track.Empty();
+	TreeValues.Empty();
 }
 
 void AProceduralRacetrackActor::GenerateTrees()
@@ -330,6 +333,7 @@ void AProceduralRacetrackActor::GenerateTrees()
 
 
 
+
 void AProceduralRacetrackActor::SpawnTrees()
 {
 	for (auto TreeValue : TreeValues)
@@ -347,7 +351,7 @@ void AProceduralRacetrackActor::SpawnTrees()
 	}
 }
 
-	
+
 FVector AProceduralRacetrackActor::GetPointOnEdge(int32 EdgeIndex)
 {
 	FVector Position;

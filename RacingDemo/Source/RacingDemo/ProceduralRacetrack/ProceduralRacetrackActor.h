@@ -91,6 +91,8 @@ public:
 
 private:
 	float Time;
+
+	
 	// Loop through width and height to get the appropriate grid positions
 	void GenerateGrid();
 	// Find the top, bottom, left and right edge indexes and store them in the appropriate array
@@ -98,17 +100,22 @@ private:
 	void ClearIndexes();
 	void RandomiseStartAndEnd();
 	void RandomiseCheckpoint();
+	
 	// Pathfinding to get track 
 	void GenerateTrack();
 	void GenerateTrees();
 
-	// spawns in road meshes
+	// Spawns in road
+	UFUNCTION()
 	void SpawnTrack();
-	void ClearTrack();
-	// spawns in trees 
+	void ClearTrackMeshes();
+	void ClearTrackValues();
+	// spawns in trees
+	UFUNCTION()
 	void SpawnTrees();
 
-	// helper function 
+
+	// Helper Function 
 	FVector GetPointOnEdge(int32 EdgeIndex);
 
 	// Indexes of Grid
@@ -126,10 +133,10 @@ private:
 
 	// Replicated properties
 	// Track is generated on server and replicated to clients
-	UPROPERTY(Replicated)
+	UPROPERTY(ReplicatedUsing=SpawnTrack)
 	TArray<FVector> Track;
 	// Tree values include position, rotation and mesh type
-	UPROPERTY(Replicated)
+	UPROPERTY(ReplicatedUsing=SpawnTrees)
 	TArray<FTree> TreeValues;
 	
 
