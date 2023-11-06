@@ -2,6 +2,7 @@
 
 
 #include "FuelComponent.h"
+#include "Net/UnrealNetwork.h"
 #include "WheeledVehiclePawn.h"
 
 // Sets default values for this component's properties
@@ -10,12 +11,21 @@ UFuelComponent::UFuelComponent()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
+	SetIsReplicatedByDefault(true);
 
 	if (AWheeledVehiclePawn* WheeledVehiclePawn = Cast<AWheeledVehiclePawn>(GetOwner()))
 	{
 		MyVehicleMovementComponent = WheeledVehiclePawn->GetVehicleMovementComponent();
 	}
 
+}
+
+void UFuelComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(UFuelComponent, CurrentFuel);
+	DOREPLIFETIME(UFuelComponent, bIsOutOfFuel);
 }
 
 // Called when the game starts
