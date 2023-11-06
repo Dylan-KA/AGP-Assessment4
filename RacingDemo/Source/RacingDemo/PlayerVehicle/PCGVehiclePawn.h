@@ -67,12 +67,20 @@ public:
 	APCGVehiclePawn();
 
 	// Current stats of the vehicle
-	UPROPERTY(BlueprintReadOnly, Replicated)
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = SetVehicleProcedural)
 	FVehicleStats VehicleStats;
 
 	// Vehicle HUD
 	UPROPERTY()
 	UVehicleHUD* VehicleHUD;
+
+	// Current rarity of the vehicle
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = SetVehicleVisuals)
+	EVehicleRarity VehicleRarity;
+
+	// FuelComponent
+	UPROPERTY(BlueprintReadOnly, Replicated)
+	UFuelComponent* FuelComponent;
 
 	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
@@ -80,17 +88,9 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	// Current rarity of the vehicle
-	UPROPERTY(BlueprintReadOnly, Replicated)
-	EVehicleRarity VehicleRarity;
-	
 	// ProceduralComponent is responsible for generating the rarity and stats of the vehicle
-	UPROPERTY(Replicated, Replicated)
+	UPROPERTY(Replicated)
 	UProceduralComponent* ProceduralComponent;
-
-	// FuelComponent
-	UPROPERTY(BlueprintReadOnly, Replicated)
-	UFuelComponent* FuelComponent;
 	
 	// ChaosVehicleMovementComponent used for getting current speed of vehicle
 	UPROPERTY()
@@ -106,13 +106,13 @@ protected:
 	void GenerateProceduralMaterial();
 	
 	// Under-glow light components
-	UPROPERTY(VisibleDefaultsOnly, Replicated)
+	UPROPERTY(VisibleDefaultsOnly)
 	UPointLightComponent* FrontLightComponent;
-	UPROPERTY(VisibleDefaultsOnly, Replicated)
+	UPROPERTY(VisibleDefaultsOnly)
 	UPointLightComponent* BackLightComponent;
-	UPROPERTY(VisibleDefaultsOnly, Replicated)
+	UPROPERTY(VisibleDefaultsOnly)
 	UPointLightComponent* LeftLightComponent;
-	UPROPERTY(VisibleDefaultsOnly, Replicated)
+	UPROPERTY(VisibleDefaultsOnly)
 	UPointLightComponent* RightLightComponent;
 	
 	// Initialises and attaches all light components to the vehicle
@@ -127,7 +127,9 @@ protected:
 	TSubclassOf<UVehicleHUD> VehicleHUDClass;
 
 	// Vehicle HUD
+	UFUNCTION()
 	void DrawUI();
+	UFUNCTION()
 	void UpdateUI();
 
 	// Called during tick function to handle empty fuel
@@ -145,7 +147,11 @@ public:
 	void ApplyWeightDistribution();
 
 private:
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastProcedural();
+
+	UFUNCTION()
+	void SetVehicleVisuals();
+
+	UFUNCTION()
+	void SetVehicleProcedural();
 	
 };

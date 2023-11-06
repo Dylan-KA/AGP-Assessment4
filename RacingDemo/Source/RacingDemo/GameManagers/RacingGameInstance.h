@@ -19,7 +19,9 @@ public:
 
 	UClass* GetVehicleClass() const;
 
-	UClass* GetRoadMeshClass() const; 
+	UClass* GetRoadMeshClass() const;
+
+	UClass* GetVehiclePlayerController() const;
 
 protected:
 
@@ -28,5 +30,8 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category="Road Mesh Classes")
 	TSubclassOf<ARoadSplineMeshActor> RoadSplineMeshClass;
+
+	UPROPERTY(EditDefaultsOnly, Category="Vehicle Player Controller Class")
+	TSubclassOf<APlayerController> VehiclePlayerController;
 	
 };

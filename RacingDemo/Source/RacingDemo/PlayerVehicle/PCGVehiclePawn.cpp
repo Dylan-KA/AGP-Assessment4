@@ -5,6 +5,8 @@
 #include "Net/UnrealNetwork.h"
 #include "UObject/Class.h"
 #include "RacingDemo/RacingDemo.h"
+#include "RacingDemo/GameManagers/MyRacingGameMode.h"
+#include "RacingDemo/GameManagers/RacingGameInstance.h"
 
 // Sets default values
 APCGVehiclePawn::APCGVehiclePawn()
@@ -18,7 +20,6 @@ APCGVehiclePawn::APCGVehiclePawn()
 	SetupLightComponents();
 	
 	bReplicates = true;
-	SetReplicateMovement(true);
 	
 }
 
@@ -27,13 +28,8 @@ void APCGVehiclePawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	
 	DOREPLIFETIME(APCGVehiclePawn, FuelComponent);
-	DOREPLIFETIME(APCGVehiclePawn, ProceduralComponent);
 	DOREPLIFETIME(APCGVehiclePawn, VehicleRarity);
 	DOREPLIFETIME(APCGVehiclePawn, VehicleStats);
-	DOREPLIFETIME(APCGVehiclePawn, FrontLightComponent);
-	DOREPLIFETIME(APCGVehiclePawn, BackLightComponent);
-	DOREPLIFETIME(APCGVehiclePawn, LeftLightComponent);
-	DOREPLIFETIME(APCGVehiclePawn, RightLightComponent);
 	
 }
 
@@ -42,17 +38,29 @@ void APCGVehiclePawn::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	// Procedural setup
-	if (GetLocalRole() == ROLE_Authority)
+	// Initial setup for the Server
+	// Server is responsible for generating procedural elements which is replicated to clients
+	if (GetNetMode() == NM_ListenServer || GetNetMode() == NM_DedicatedServer)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Has AUTHORITY in BeginPlay"))
+		UE_LOG(LogTemp, Warning, TEXT("NetMode is ListenServer/DedicatedServer"))
 		ProceduralComponent->GenerateRandomVehicle(VehicleRarity, VehicleStats);
 		ApplyWeightDistribution();
-		//GenerateProceduralMaterial();
+		FuelComponent->SetCurrentFuel(VehicleStats.MaxFuelCapacity);
+
+		GenerateProceduralMaterial();
+		SetUnderGlowColour();
+	}
+
+	// Initial setup for standalone 
+	if (GetNetMode() == NM_Standalone)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("NetMode is Standalone"))
+		ProceduralComponent->GenerateRandomVehicle(VehicleRarity, VehicleStats);
+		ApplyWeightDistribution();
+		GenerateProceduralMaterial();
 		SetUnderGlowColour();
 		FuelComponent->SetCurrentFuel(VehicleStats.MaxFuelCapacity);
-		
-		MulticastProcedural();
+		DrawUI();
 	}
 }
 
@@ -184,7 +192,8 @@ void APCGVehiclePawn::UpdateUI()
 	{
 		if (!VehicleHUD)
 		{
-			UE_LOG(LogTemp, Error, TEXT("VehicleHUD is NULL"));
+			UE_LOG(LogTemp, Error, TEXT("VehicleHUD is NULL, attempting to create"));
+			DrawUI();
 			return;
 		}
 		
@@ -232,8 +241,32 @@ void APCGVehiclePawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
-	UpdateUI();
 	ManageFuel(DeltaTime);
+
+	if (GetLocalRole() == ROLE_AutonomousProxy)
+	{
+		UpdateUI();
+	}
+	
+	// Check if there is a Controller, if not then attempt to create a new one
+	if (GetLocalRole() == ROLE_Authority)
+	{
+		if (GetController() == nullptr)
+		{
+			UE_LOG(LogTemp, Error, TEXT("Controller is null"))
+			if (const URacingGameInstance* GameInstance = GetWorld()->GetGameInstance<URacingGameInstance>())
+			{
+				//GameInstance->GetVehiclePlayerController();
+				// FIGURE OUT HOW TO USE CUSTOM CONTROLLER
+				APlayerController* NewController = GetWorld()->SpawnActor<APlayerController>(APlayerController::StaticClass());
+				if (NewController)
+				{
+					NewController->Possess(this);
+				}
+			}
+
+		}
+	}
 	
 }
 
@@ -244,17 +277,22 @@ void APCGVehiclePawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	
 }
 
-void APCGVehiclePawn::MulticastProcedural_Implementation()
+// Called when the rarity is changed and replicated to the client
+void APCGVehiclePawn::SetVehicleVisuals()
 {
-	FText EnumDisplayName = UEnum::GetDisplayValueAsText(VehicleRarity);
-	UE_LOG(LogTemp, Warning, TEXT("REPLICATED ON CLIENT: %s %s"), *EnumDisplayName.ToString(), *VehicleStats.ToString())
-	
-	// This code runs on clients, not the server
-	UE_LOG(LogTemp, Warning, TEXT("Generating Procedural Material"))
-	GenerateProceduralMaterial();
+	FText VehicleRarityText = UEnum::GetDisplayValueAsText(VehicleRarity);
+	UE_LOG(LogTemp, Warning, TEXT("RARITY REPLICATED ON CLIENT: %s"), *VehicleRarityText.ToString())
 
-	ApplyWeightDistribution();
+	GenerateProceduralMaterial();
 	SetUnderGlowColour();
-	FuelComponent->SetCurrentFuel(VehicleStats.MaxFuelCapacity);
+	
 	DrawUI();
+}
+
+// Called when the VehicleStats is changed and replicated to the client
+void APCGVehiclePawn::SetVehicleProcedural()
+{
+	UE_LOG(LogTemp, Warning, TEXT("VEHICLE STATS REPLICATED ON CLIENT: %s"), *VehicleStats.ToString())
+	ApplyWeightDistribution();
+	FuelComponent->SetCurrentFuel(VehicleStats.MaxFuelCapacity);
 }
