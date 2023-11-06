@@ -23,6 +23,7 @@ public:
 
 	UClass* GetVehiclePlayerController() const;
 
+	UClass* GetFuelPickupClass() const; 
 protected:
 
 	UPROPERTY(EditDefaultsOnly, Category="Vehicle Class")
@@ -33,5 +34,8 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category="Vehicle Player Controller Class")
 	TSubclassOf<APlayerController> VehiclePlayerController;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Fuel Pickup Classes")
+	TSubclassOf<ARoadSplineMeshActor> FuelPickupClass;
 	
 };

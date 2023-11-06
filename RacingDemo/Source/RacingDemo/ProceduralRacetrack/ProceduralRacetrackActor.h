@@ -22,6 +22,17 @@ public:
 	int32 MeshIndex; 
 };
 
+USTRUCT()
+struct FTrackSection
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY()
+	FVector Position;
+	UPROPERTY()
+	FRotator ForwardRotation;
+};
+
 
 class UProceduralMeshComponent;
 UCLASS()
@@ -35,9 +46,9 @@ public:
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	FVector GetStartPosition() const;
+	FTrackSection GetTrackStart() const;
 
-	FVector GetEndPosition() const;
+	FTrackSection GetTrackEnd() const;
 
 	bool HasGenerated() const;
 
@@ -117,6 +128,7 @@ private:
 
 	// Helper Function 
 	FVector GetPointOnEdge(int32 EdgeIndex);
+	void PrintTrack();
 
 	// Indexes of Grid
 	TArray<int32> BottomEdgeIndexes;
@@ -134,7 +146,7 @@ private:
 	// Replicated properties
 	// Track is generated on server and replicated to clients
 	UPROPERTY(ReplicatedUsing=SpawnTrack)
-	TArray<FVector> Track;
+	TArray<FTrackSection> Track;
 	// Tree values include position, rotation and mesh type
 	UPROPERTY(ReplicatedUsing=SpawnTrees)
 	TArray<FTree> TreeValues;
