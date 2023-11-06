@@ -4,8 +4,6 @@
 #include "ChaosVehicleMovementComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "UObject/Class.h"
-#include "RacingDemo/RacingDemo.h"
-#include "RacingDemo/GameManagers/MyRacingGameMode.h"
 #include "RacingDemo/GameManagers/RacingGameInstance.h"
 
 // Sets default values
@@ -40,17 +38,23 @@ void APCGVehiclePawn::BeginPlay()
 	
 	// Initial setup for the Server
 	// Server is responsible for generating procedural elements which is replicated to clients
-	if (GetNetMode() == NM_ListenServer || GetNetMode() == NM_DedicatedServer)
+	if (GetNetMode() == NM_ListenServer)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("NetMode is ListenServer/DedicatedServer"))
+		UE_LOG(LogTemp, Warning, TEXT("NetMode is ListenServer"))
 		ProceduralComponent->GenerateRandomVehicle(VehicleRarity, VehicleStats);
 		ApplyWeightDistribution();
 		FuelComponent->SetCurrentFuel(VehicleStats.MaxFuelCapacity);
 
 		GenerateProceduralMaterial();
 		SetUnderGlowColour();
+	} else if (GetNetMode() == NM_DedicatedServer)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("NetMode is DedicatedServer"))
+		ProceduralComponent->GenerateRandomVehicle(VehicleRarity, VehicleStats);
+		ApplyWeightDistribution();
+		FuelComponent->SetCurrentFuel(VehicleStats.MaxFuelCapacity);
 	}
-
+	
 	// Initial setup for standalone 
 	if (GetNetMode() == NM_Standalone)
 	{
@@ -242,29 +246,24 @@ void APCGVehiclePawn::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	
 	ManageFuel(DeltaTime);
-
-	if (GetLocalRole() == ROLE_AutonomousProxy)
-	{
-		UpdateUI();
-	}
+	
+	UpdateUI();
 	
 	// Check if there is a Controller, if not then attempt to create a new one
-	if (GetLocalRole() == ROLE_Authority)
+	if (GetLocalRole() == ROLE_AutonomousProxy)
 	{
 		if (GetController() == nullptr)
 		{
-			UE_LOG(LogTemp, Error, TEXT("Controller is null"))
+			UE_LOG(LogTemp, Error, TEXT("Controller is null on AutonomousProxy, attempting to create a new one"))
 			if (const URacingGameInstance* GameInstance = GetWorld()->GetGameInstance<URacingGameInstance>())
 			{
-				//GameInstance->GetVehiclePlayerController();
-				// FIGURE OUT HOW TO USE CUSTOM CONTROLLER
-				APlayerController* NewController = GetWorld()->SpawnActor<APlayerController>(APlayerController::StaticClass());
+				// Get blueprint implementation of 
+				APlayerController* NewController = GetWorld()->SpawnActor<APlayerController>(GameInstance->GetVehiclePlayerController());
 				if (NewController)
 				{
 					NewController->Possess(this);
 				}
 			}
-
 		}
 	}
 	

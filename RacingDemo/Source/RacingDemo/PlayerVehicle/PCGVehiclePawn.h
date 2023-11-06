@@ -10,6 +10,9 @@
 #include "VehicleHUD.h"
 #include "PCGVehiclePawn.generated.h"
 
+class UInputMappingContext;
+class UInputAction;
+
 USTRUCT(BlueprintType)
 struct FVehicleStats
 {
@@ -89,7 +92,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	// ProceduralComponent is responsible for generating the rarity and stats of the vehicle
-	UPROPERTY(Replicated)
+	UPROPERTY()
 	UProceduralComponent* ProceduralComponent;
 	
 	// ChaosVehicleMovementComponent used for getting current speed of vehicle
@@ -134,6 +137,10 @@ protected:
 
 	// Called during tick function to handle empty fuel
 	void ManageFuel(float DeltaTime);
+
+	// Player Controller / Movement
+	UPROPERTY(EditDefaultsOnly)
+	UInputMappingContext* InputMappingContext;
 	
 public:	
 	// Called every frame
