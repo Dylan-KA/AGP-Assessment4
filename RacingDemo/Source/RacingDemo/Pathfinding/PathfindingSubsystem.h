@@ -50,18 +50,16 @@ public:
 	 */
 	void PlaceProceduralNodes(const TArray<FVector>& LandscapeVertexData, int32 MapWidth, int32 MapHeight);
 
-	TArray<FVector> GetWaypointPositions();
+	TArray<FVector> GetNodePositions();
 
 	TArray<ANavigationNode*> GetProceduralNodes();	
 	
 protected:
-	
+	// Procedural Map Logic
 	TArray<ANavigationNode*> Nodes;
-
 	TArray<FVector> NodePositions;
 
-	// Procedural Map Logic
-	TArray<ANavigationNode*> ProcedurallyPlacedNodes;
+
 
 private:
 
@@ -72,4 +70,9 @@ private:
 	ANavigationNode* FindFurthestNode(const FVector& TargetLocation);
 	TArray<FVector> GetPath(ANavigationNode* StartNode, ANavigationNode* EndNode);
 	static TArray<FVector> ReconstructPath(const TMap<ANavigationNode*, ANavigationNode*>& CameFromMap, ANavigationNode* EndNode);
+
+	void PlaceProceduralNodesImplementation(const TArray<FVector>& LandscapeVertexData, int32 MapWidth, int32 MapHeight);
+
+	UFUNCTION(Server, Reliable)
+	void ServerPlaceProceduralNodes(const TArray<FVector>& LandscapeVertexData, int32 MapWidth, int32 MapHeight);
 };

@@ -6,59 +6,86 @@
 #include "RacingDemo/GameManagers/RacingGameInstance.h"
 #include "Components/SplineMeshComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 AProceduralRacetrackActor::AProceduralRacetrackActor()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	bReplicates = true;
 	
 	ProceduralMesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("Procedural Mesh"));
 	SetRootComponent(ProceduralMesh);
 }
 
-FVector AProceduralRacetrackActor::GetStartPosition()
+void AProceduralRacetrackActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AProceduralRacetrackActor, Track); 
+	DOREPLIFETIME(AProceduralRacetrackActor, TreeValues); 
+}
+
+FVector AProceduralRacetrackActor::GetStartPosition() const
 {
 	return StartPosition;
 }
 
-FVector AProceduralRacetrackActor::GetEndPosition()
+FVector AProceduralRacetrackActor::GetEndPosition() const
 {
 	return EndPosition;
+}
+
+bool AProceduralRacetrackActor::HasGenerated() const
+{
+	return bHasGenerated;
 }
 
 // Called when the game starts or when spawned
 void AProceduralRacetrackActor::BeginPlay()
 {
 	Super::BeginPlay();
+	//UE_LOG(LogTemp, Warning, TEXT("BeginPlay Starting"));
+
 	PathfindingSubsystem = GetWorld()->GetSubsystem<UPathfindingSubsystem>();
 	if(PathfindingSubsystem)
 	{
-		GenerateRacetrackLevel();
+		GenerateRacetrackLevel(); 
 	}
 	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("Can't find the pathfinding subsystem"))
 	}
+	//UE_LOG(LogTemp, Warning, TEXT("Begin Play Finished: %d"), GetNetMode()); 
+
 }
 
 void AProceduralRacetrackActor::GenerateRacetrackLevel()
 {
-	ClearTrack(); 
-	GenerateGrid();
-	InitialiseIndexes();
-	RandomiseStartAndEnd();
-	RandomiseCheckpoint();
-	FindTrackPath(); 
-	BuildTrack();
-	SpawnTrees();
+	ClearTrackMeshes();
+	// if on the server generate the racetrack level details
+	// then replicate them to the client
+	if(GetNetMode() < ENetMode::NM_Client)
+	{
+		ClearTrackValues(); 
+		GenerateGrid();
+		InitialiseIndexes();
+		RandomiseStartAndEnd();
+		RandomiseCheckpoint();
+		GenerateTrack();
+		GenerateTrees();
+		SpawnTrack();
+		SpawnTrees();
+	}
+	
 }
 
 // Called every frame
 void AProceduralRacetrackActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	Time += DeltaTime;
+	
 }
 
 void AProceduralRacetrackActor::GenerateGrid()
@@ -70,15 +97,12 @@ void AProceduralRacetrackActor::GenerateGrid()
 			FVector VertexLocation = FVector(X * VertexSpacing, Y * VertexSpacing, 0.0f);
 			VertexLocation.Z += 0.1;
 			Vertices.Add(VertexLocation);
-			
-			// DrawDebugSphere(GetWorld(), VertexLocation, 50.0f, 8, FColor::Blue,
-			// 	true, -1, 0, 10.0f);
 		}
 	}
 	if(PathfindingSubsystem)
 	{
 		PathfindingSubsystem->PlaceProceduralNodes(Vertices, Width, Height);
-		Waypoints = PathfindingSubsystem->GetWaypointPositions();
+		Waypoints = PathfindingSubsystem->GetNodePositions();
 	}
 }
 
@@ -90,7 +114,7 @@ void AProceduralRacetrackActor::InitialiseIndexes()
 	UE_LOG(LogTemp, Warning, TEXT("Height : %d"), Height);
 	UE_LOG(LogTemp, Warning, TEXT("Width : %d"), Width);
 	
-	// ignore the left and right rows
+	// Ignore the left and right rows
 	for(int32 i = 1; i < Width - 1; i++)
 	{
 		TopEdgeIndexes.Add((Width * Height - 1) - i);
@@ -164,11 +188,12 @@ void AProceduralRacetrackActor::RandomiseCheckpoint()
 	Checkpoint2 = Waypoints[CheckpointIndex2];
 }
 
-void AProceduralRacetrackActor::FindTrackPath()
+void AProceduralRacetrackActor::GenerateTrack()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Start: %s"), *StartPosition.ToString());
 	UE_LOG(LogTemp, Warning, TEXT("End: %s"), *EndPosition.ToString());
-
+	UE_LOG(LogTemp, Warning, TEXT("Netmode: %d"), GetNetMode());
+	
 	// Fix track generation so the path doesn't backtrack over itself
 	// Find path from start point to checkpoints to end point
 	Track = PathfindingSubsystem->GetPath(StartPosition, Checkpoint1);
@@ -178,8 +203,13 @@ void AProceduralRacetrackActor::FindTrackPath()
 	Track.Append(PathfindingSubsystem->GetPath(Checkpoint2, EndPosition));
 }
 
-void AProceduralRacetrackActor::BuildTrack()
+void AProceduralRacetrackActor::SpawnTrack()
 {
+	UE_LOG(LogTemp, Warning, TEXT("Spawn Track Implementation"));
+	UE_LOG(LogTemp, Warning, TEXT("Netmode: %d"), GetNetMode());
+	UE_LOG(LogTemp, Warning, TEXT("Track Length: %d"), Track.Num());
+	
+
 	FVector PrevPosition;
 	// for every point on the track spawn in a road mesh 
 	for (int32 i = 0; i < Track.Num(); i++)
@@ -197,7 +227,6 @@ void AProceduralRacetrackActor::BuildTrack()
 			if (const URacingGameInstance* GameInstance =
 				GetWorld()->GetGameInstance<URacingGameInstance>())
 			{
-				UE_LOG(LogTemp, Warning, TEXT("End: %p"), GameInstance->GetRoadMeshClass());
 
 				ARoadSplineMeshActor* RoadMeshActor = GetWorld()->SpawnActor<ARoadSplineMeshActor>(
 				GameInstance->GetRoadMeshClass(), PrevPosition,Rotation);
@@ -219,18 +248,17 @@ void AProceduralRacetrackActor::BuildTrack()
 				{
 					StartFlagMeshComponent->SetStaticMesh(StartFlagMesh);
 				}
-
-				// Spawn PlayerStart
-				// PlayerStart = GetWorld()->SpawnActor<APlayerStart>(PrevPosition, Rotation);
 				
 			}
 		}
 		PrevPosition = CurrentPosition;
 	}
+	bHasGenerated = true;
 }
 
-void AProceduralRacetrackActor::ClearTrack()
+void AProceduralRacetrackActor::ClearTrackMeshes()
 {
+	// clear all spawned meshes
 	for (auto MeshActor : RoadMeshActors)
 	{
 		if(MeshActor)
@@ -238,8 +266,7 @@ void AProceduralRacetrackActor::ClearTrack()
 			MeshActor->Destroy();
 		}
 	}
-
-	for (auto MeshActor : TreeMeshesActors)
+	for (auto MeshActor : TreeMeshActors)
 	{
 		if(MeshActor)
 		{
@@ -250,17 +277,24 @@ void AProceduralRacetrackActor::ClearTrack()
 	{
 		StartFlagMeshActor->Destroy();
 	}
+	
 	RoadMeshActors.Empty();
-	TreeMeshesActors.Empty();
+	TreeMeshActors.Empty();
+}
+
+void AProceduralRacetrackActor::ClearTrackValues()
+{
+	// clear generated track values
 	Vertices.Empty();
 	Waypoints.Empty();
 	Track.Empty();
+	TreeValues.Empty();
 }
 
-
-void AProceduralRacetrackActor::SpawnTrees()
+void AProceduralRacetrackActor::GenerateTrees()
 {
 	TArray<FVector> PossibleSpawnPositions;
+
 	for (auto Index : CentralIndexes)
 	{
 		// create an array of possible spawn positions using the waypoints list
@@ -270,7 +304,7 @@ void AProceduralRacetrackActor::SpawnTrees()
 			PossibleSpawnPositions.Add(Waypoints[Index]);
 		}
 	}
-	
+
 	// loop a set amount of times
 	for(int32 i = 0; i <= TreeAmount; i++)
 	{
@@ -278,27 +312,41 @@ void AProceduralRacetrackActor::SpawnTrees()
 		{
 			break;
 		}
-		// randomly select a tree from the list of tree meshes
-		UStaticMesh* Tree = TreeMeshes[FMath::RandRange(0, TreeMeshes.Num() - 1)];
-		FVector SpawnPosition = PossibleSpawnPositions[FMath::RandRange(0, PossibleSpawnPositions.Num() - 1)];
-		
-		// and spawn it in a random possible spawn location
-		AStaticMeshActor* TreeMeshActor = GetWorld()->SpawnActor<AStaticMeshActor>(SpawnPosition,
-			FRotator(0,FMath::RandRange(0, 360),0));
-		TreeMeshActor->SetMobility(EComponentMobility::Stationary);
-		//TreeMeshActor->SetActorLocation(SpawnPosition);
-		UStaticMeshComponent* TreeMeshComponent = TreeMeshActor->GetStaticMeshComponent();
-		if (TreeMeshComponent)
-		{
-			TreeMeshComponent->SetStaticMesh(Tree);
-		}
-		TreeMeshesActors.Add(TreeMeshActor);
+		// randomly select a position, rotation and mesh for each tree
+		FVector Position = PossibleSpawnPositions[FMath::RandRange(0, PossibleSpawnPositions.Num() - 1)];
+		FTree Tree = FTree();
+		Tree.Position = Position;
+		Tree.Rotation = FRotator(0,FMath::RandRange(0, 360),0);
+		Tree.MeshIndex = FMath::RandRange(0, TreeMeshes.Num() - 1);
+		// Add each set of tree values to array
+		TreeValues.Add(Tree);
+
 		// then remove that location from the possible spawns
-		PossibleSpawnPositions.Remove(SpawnPosition);
+		PossibleSpawnPositions.Remove(Position);
 	}
 }
 
-	
+
+
+
+void AProceduralRacetrackActor::SpawnTrees()
+{
+	for (auto TreeValue : TreeValues)
+	{
+		// Spawn in each tree
+		AStaticMeshActor* TreeMeshActor = GetWorld()->SpawnActor<AStaticMeshActor>(TreeValue.Position,
+			TreeValue.Rotation);
+		TreeMeshActor->SetMobility(EComponentMobility::Stationary);
+		UStaticMeshComponent* TreeMeshComponent = TreeMeshActor->GetStaticMeshComponent();
+		if (TreeMeshComponent)
+		{
+			TreeMeshComponent->SetStaticMesh(TreeMeshes[TreeValue.MeshIndex]);
+		}
+		TreeMeshActors.Add(TreeMeshActor);
+	}
+}
+
+
 FVector AProceduralRacetrackActor::GetPointOnEdge(int32 EdgeIndex)
 {
 	FVector Position;
@@ -324,4 +372,5 @@ FVector AProceduralRacetrackActor::GetPointOnEdge(int32 EdgeIndex)
 	}
 	return Position;
 }
+
 

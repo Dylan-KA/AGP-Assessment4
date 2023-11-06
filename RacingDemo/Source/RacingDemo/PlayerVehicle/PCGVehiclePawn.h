@@ -10,6 +10,9 @@
 #include "VehicleHUD.h"
 #include "PCGVehiclePawn.generated.h"
 
+class UInputMappingContext;
+class UInputAction;
+
 USTRUCT(BlueprintType)
 struct FVehicleStats
 {
@@ -67,28 +70,30 @@ public:
 	APCGVehiclePawn();
 
 	// Current stats of the vehicle
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = SetVehicleProcedural)
 	FVehicleStats VehicleStats;
 
 	// Vehicle HUD
 	UPROPERTY()
 	UVehicleHUD* VehicleHUD;
 
+	// Current rarity of the vehicle
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = SetVehicleVisuals)
+	EVehicleRarity VehicleRarity;
+
+	// FuelComponent
+	UPROPERTY(BlueprintReadOnly, Replicated)
+	UFuelComponent* FuelComponent;
+
+	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	// Current rarity of the vehicle
-	UPROPERTY(BlueprintReadOnly)
-	EVehicleRarity VehicleRarity;
-
-	// ProceduralComponent
+	// ProceduralComponent is responsible for generating the rarity and stats of the vehicle
 	UPROPERTY()
 	UProceduralComponent* ProceduralComponent;
-
-	// FuelComponent
-	UPROPERTY(BlueprintReadOnly)
-	UFuelComponent* FuelComponent;
 	
 	// ChaosVehicleMovementComponent used for getting current speed of vehicle
 	UPROPERTY()
@@ -125,11 +130,17 @@ protected:
 	TSubclassOf<UVehicleHUD> VehicleHUDClass;
 
 	// Vehicle HUD
+	UFUNCTION()
 	void DrawUI();
+	UFUNCTION()
 	void UpdateUI();
 
 	// Called during tick function to handle empty fuel
 	void ManageFuel(float DeltaTime);
+
+	// Player Controller / Movement
+	UPROPERTY(EditDefaultsOnly)
+	UInputMappingContext* InputMappingContext;
 	
 public:	
 	// Called every frame
@@ -142,4 +153,12 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "PCG Vehicle Pawn")
 	void ApplyWeightDistribution();
 
+private:
+
+	UFUNCTION()
+	void SetVehicleVisuals();
+
+	UFUNCTION()
+	void SetVehicleProcedural();
+	
 };

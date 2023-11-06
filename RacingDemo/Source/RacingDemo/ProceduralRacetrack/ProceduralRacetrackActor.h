@@ -5,10 +5,23 @@
 #include "CoreMinimal.h"
 #include "Engine/StaticMeshActor.h"
 #include "GameFramework/Actor.h"
-#include "GameFramework/PlayerStart.h"
 #include "RacingDemo/Pathfinding/PathfindingSubsystem.h"
 #include "RoadSplineMeshActor.h"
 #include "ProceduralRacetrackActor.generated.h"
+
+USTRUCT()
+struct FTree
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY()
+	FVector Position;
+	UPROPERTY()
+	FRotator Rotation;
+	UPROPERTY()
+	int32 MeshIndex; 
+};
+
 
 class UProceduralMeshComponent;
 UCLASS()
@@ -20,9 +33,13 @@ public:
 	// Sets default values for this actor's properties
 	AProceduralRacetrackActor();
 
-	FVector GetStartPosition();
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	FVector GetEndPosition();
+	FVector GetStartPosition() const;
+
+	FVector GetEndPosition() const;
+
+	bool HasGenerated() const;
 
 protected:
 	// Called when the game starts or when spawned
@@ -57,35 +74,48 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UStaticMesh* StartFlagMesh;
 
-	//UPROPERTY()
-	//APlayerStart* PlayerStart; 
-
 	// Meshes 
 	UPROPERTY()
 	TArray<ARoadSplineMeshActor*> RoadMeshActors;
 	UPROPERTY()
-	TArray<AStaticMeshActor*> TreeMeshesActors;
+	TArray<AStaticMeshActor*> TreeMeshActors;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<UStaticMesh*> TreeMeshes;
 	
 	UPROPERTY(EditAnywhere)
-	bool bShouldRegenerate;
+	bool bHasGenerated = false;
 	
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 private:
+	float Time;
+
+	
+	// Loop through width and height to get the appropriate grid positions
 	void GenerateGrid();
+	// Find the top, bottom, left and right edge indexes and store them in the appropriate array
 	void InitialiseIndexes();
 	void ClearIndexes();
 	void RandomiseStartAndEnd();
 	void RandomiseCheckpoint();
-	void FindTrackPath();
-	void BuildTrack();
-	void ClearTrack();
 	
+	// Pathfinding to get track 
+	void GenerateTrack();
+	void GenerateTrees();
+
+	// Spawns in road
+	UFUNCTION()
+	void SpawnTrack();
+	void ClearTrackMeshes();
+	void ClearTrackValues();
+	// spawns in trees
+	UFUNCTION()
 	void SpawnTrees();
+
+
+	// Helper Function 
 	FVector GetPointOnEdge(int32 EdgeIndex);
 
 	// Indexes of Grid
@@ -100,5 +130,14 @@ private:
 	FVector Checkpoint1;
 	FVector Checkpoint2;
 	FVector EndPosition;
+
+	// Replicated properties
+	// Track is generated on server and replicated to clients
+	UPROPERTY(ReplicatedUsing=SpawnTrack)
 	TArray<FVector> Track;
+	// Tree values include position, rotation and mesh type
+	UPROPERTY(ReplicatedUsing=SpawnTrees)
+	TArray<FTree> TreeValues;
+	
+
 };

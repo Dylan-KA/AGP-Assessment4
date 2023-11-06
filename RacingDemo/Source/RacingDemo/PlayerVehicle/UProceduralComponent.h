@@ -18,7 +18,7 @@ enum class EVehicleRarity : uint8
 };
 
 /**
- * This Component is responsible for generating the rarity and stats of the vehicle and populating the corresponding member variables in the VehicleStatsManager
+ * This Component is responsible for generating the rarity and stats of the vehicle and populating the corresponding member variables
  */
 UCLASS( BlueprintType, Blueprintable )
 class RACINGDEMO_API UProceduralComponent : public UActorComponent
