@@ -7,6 +7,7 @@
 #include "Components/SplineMeshComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Net/UnrealNetwork.h"
+#include "RacingDemo/Pickups/FuelPickup.h"
 
 // Sets default values
 AProceduralRacetrackActor::AProceduralRacetrackActor()
@@ -34,7 +35,6 @@ FTrackSection AProceduralRacetrackActor::GetTrackStart() const
 FTrackSection AProceduralRacetrackActor::GetTrackEnd() const
 {
 	return Track.Top(); 
-
 }
 
 
@@ -50,15 +50,16 @@ void AProceduralRacetrackActor::BeginPlay()
 	//UE_LOG(LogTemp, Warning, TEXT("BeginPlay Starting"));
 
 	PathfindingSubsystem = GetWorld()->GetSubsystem<UPathfindingSubsystem>();
+
 	if(PathfindingSubsystem)
 	{
 		GenerateRacetrackLevel(); 
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("Can't find the pathfinding subsystem"))
+		UE_LOG(LogTemp, Error, TEXT("Can't find subsystems"))
 	}
-	PrintTrack();
+	//PrintTrack();
 	//UE_LOG(LogTemp, Warning, TEXT("Begin Play Finished: %d"), GetNetMode()); 
 
 }
@@ -79,6 +80,7 @@ void AProceduralRacetrackActor::GenerateRacetrackLevel()
 		GenerateTrees();
 		SpawnTrack();
 		SpawnTrees();
+		SpawnFuelPickups();
 	}
 	
 }
@@ -358,6 +360,31 @@ void AProceduralRacetrackActor::SpawnTrees()
 			TreeMeshComponent->SetStaticMesh(TreeMeshes[TreeValue.MeshIndex]);
 		}
 		TreeMeshActors.Add(TreeMeshActor);
+	}
+}
+
+void AProceduralRacetrackActor::SpawnFuelPickups()
+{
+	// add all track positions to the possible spawns list
+	for (auto TrackSection : Track)
+	{
+		PossibleTrackSpawnPositions.Add(TrackSection.Position);
+	}
+	// Number of fuel pickups is  dependent on length of the track
+	for(int i = 0; i < Track.Num()/10; i++)
+	{
+		//Randomly select position
+		FVector SpawnPosition = PossibleTrackSpawnPositions[FMath::RandRange(0,PossibleTrackSpawnPositions.Num()-1)];
+		SpawnPosition.Z += 50;
+		if (const URacingGameInstance* GameInstance =
+				GetWorld()->GetGameInstance<URacingGameInstance>())
+		{
+			//Spawn fuel pickup at position
+			AFuelPickup* FuelPickup = GetWorld()->SpawnActor<AFuelPickup>(
+			GameInstance->GetFuelPickupClass(), SpawnPosition, FRotator(0,0,0));
+		}
+		//Remove position from list
+		PossibleTrackSpawnPositions.Remove(SpawnPosition);
 	}
 }
 

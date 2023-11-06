@@ -64,6 +64,7 @@ protected:
 	// Pathfinding Subsystem
 	UPROPERTY()
 	UPathfindingSubsystem* PathfindingSubsystem;
+	
 	UPROPERTY()
 	TArray<FVector> Waypoints;
 	
@@ -125,6 +126,8 @@ private:
 	UFUNCTION()
 	void SpawnTrees();
 
+	void SpawnFuelPickups(); 
+
 
 	// Helper Function 
 	FVector GetPointOnEdge(int32 EdgeIndex);
@@ -142,6 +145,8 @@ private:
 	FVector Checkpoint1;
 	FVector Checkpoint2;
 	FVector EndPosition;
+
+	TArray<FVector> PossibleTrackSpawnPositions;
 
 	// Replicated properties
 	// Track is generated on server and replicated to clients

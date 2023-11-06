@@ -4,6 +4,7 @@
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
 #include "WheeledVehiclePawn.h"
+#include "RacingDemo/Pickups/FuelPickup.h"
 #include "RacingDemo/ProceduralRacetrack/RoadSplineMeshActor.h"
 #include "RacingGameInstance.generated.h"
 
@@ -36,6 +37,6 @@ protected:
 	TSubclassOf<APlayerController> VehiclePlayerController;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Fuel Pickup Classes")
-	TSubclassOf<ARoadSplineMeshActor> FuelPickupClass;
+	TSubclassOf<AFuelPickup> FuelPickupClass;
 	
 };

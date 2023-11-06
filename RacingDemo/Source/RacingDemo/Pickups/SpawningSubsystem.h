@@ -3,10 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "RacingDemo/ProceduralRacetrack/ProceduralRacetrackActor.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "SpawningSubsystem.generated.h"
 
+struct FTrackSection;
 /**
  * 
  */
@@ -16,5 +16,9 @@ class RACINGDEMO_API USpawningSubsystem : public UWorldSubsystem
 	GENERATED_BODY()
 
 public:
-	void SpawnPickups(TArray<FTrackSection> Track);
+	//void SpawnPickups(TArray<FTrackSection> Track);
+
+private:
+	//TArray<FVector> PossibleSpawnPositions; 
+
 };
