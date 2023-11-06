@@ -21,6 +21,7 @@ public:
 
 	UClass* GetRoadMeshClass() const; 
 
+	UClass* GetFuelPickupClass() const; 
 protected:
 
 	UPROPERTY(EditDefaultsOnly, Category="Vehicle Class")
@@ -28,5 +29,8 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category="Road Mesh Classes")
 	TSubclassOf<ARoadSplineMeshActor> RoadSplineMeshClass;
+
+	UPROPERTY(EditDefaultsOnly, Category="Fuel Pickup Classes")
+	TSubclassOf<ARoadSplineMeshActor> FuelPickupClass;
 	
 };

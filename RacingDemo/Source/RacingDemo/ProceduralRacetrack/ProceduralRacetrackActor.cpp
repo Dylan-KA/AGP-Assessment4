@@ -56,6 +56,7 @@ void AProceduralRacetrackActor::BeginPlay()
 	{
 		UE_LOG(LogTemp, Error, TEXT("Can't find the pathfinding subsystem"))
 	}
+	PrintTrack();
 	//UE_LOG(LogTemp, Warning, TEXT("Begin Play Finished: %d"), GetNetMode()); 
 
 }
@@ -193,14 +194,21 @@ void AProceduralRacetrackActor::GenerateTrack()
 	UE_LOG(LogTemp, Warning, TEXT("Start: %s"), *StartPosition.ToString());
 	UE_LOG(LogTemp, Warning, TEXT("End: %s"), *EndPosition.ToString());
 	UE_LOG(LogTemp, Warning, TEXT("Netmode: %d"), GetNetMode());
-	
+	TArray<FVector> Path; 
 	// Fix track generation so the path doesn't backtrack over itself
 	// Find path from start point to checkpoints to end point
-	Track = PathfindingSubsystem->GetPath(StartPosition, Checkpoint1);
-	Track.Pop(); 
-	Track.Append(PathfindingSubsystem->GetPath(Checkpoint1, Checkpoint2));
-	Track.Pop(); 
-	Track.Append(PathfindingSubsystem->GetPath(Checkpoint2, EndPosition));
+	Path = PathfindingSubsystem->GetPath(StartPosition, Checkpoint1);
+	Path.Pop(); 
+	Path.Append(PathfindingSubsystem->GetPath(Checkpoint1, Checkpoint2));
+	Path.Pop(); 
+	Path.Append(PathfindingSubsystem->GetPath(Checkpoint2, EndPosition));
+	//store path positions in track
+	for (auto Position : Path)
+	{
+		FTrackSection Section;
+		Section.Position = Position; 
+		Track.Add(Section);
+	}
 }
 
 void AProceduralRacetrackActor::SpawnTrack()
@@ -214,22 +222,26 @@ void AProceduralRacetrackActor::SpawnTrack()
 	// for every point on the track spawn in a road mesh 
 	for (int32 i = 0; i < Track.Num(); i++)
 	{
-		FVector CurrentPosition = Track[i];
-		// if the previous position has been set 
+		FVector CurrentPosition = Track[i].Position;
+		// if this is the second track section 
 		if( i != 0 )
 		{
 			FVector MidPoint = (CurrentPosition + PrevPosition) / 2;
 			FVector Diff = CurrentPosition - PrevPosition;
 			PrevPosition.Z += 1;
 			//UE_LOG(LogTemp, Warning, TEXT("Step: %s"), *PrevPosition.ToString());
+			
 			// Spawn a road at each point and face it towards the next point on the track
-			FRotator Rotation = UKismetMathLibrary::FindLookAtRotation(PrevPosition, CurrentPosition);
+			FRotator Rotation = FRotator(0,UKismetMathLibrary::FindLookAtRotation(PrevPosition, CurrentPosition).Yaw,0);
+			// store each track sections forward rotation 
+			Track[i-1].ForwardRotation = Rotation; 
 			if (const URacingGameInstance* GameInstance =
 				GetWorld()->GetGameInstance<URacingGameInstance>())
 			{
 
 				ARoadSplineMeshActor* RoadMeshActor = GetWorld()->SpawnActor<ARoadSplineMeshActor>(
 				GameInstance->GetRoadMeshClass(), PrevPosition,Rotation);
+
 				RoadMeshActors.Add(RoadMeshActor);
 				RoadMeshActor->GetSplineMeshComponent()->SetStartPosition(FVector(-200 ,0.0, 1.0 ));
 				RoadMeshActor->GetSplineMeshComponent()->SetEndPosition(FVector(Diff.Length(),0.0, 1.0 ));
@@ -298,11 +310,12 @@ void AProceduralRacetrackActor::GenerateTrees()
 	for (auto Index : CentralIndexes)
 	{
 		// create an array of possible spawn positions using the waypoints list
-		// and removing the race track positions from it
-		if(!Track.Contains(Waypoints[Index]))
-		{
 			PossibleSpawnPositions.Add(Waypoints[Index]);
-		}
+	}
+	// removing the race track positions from possible spawn positions
+	for (auto TrackSection : Track)
+	{
+		PossibleSpawnPositions.Remove(TrackSection.Position); 
 	}
 
 	// loop a set amount of times
@@ -371,6 +384,17 @@ FVector AProceduralRacetrackActor::GetPointOnEdge(int32 EdgeIndex)
 		Position = Waypoints[RightEdgeIndexes[FMath::RandRange(0,RightEdgeIndexes.Num() - 1)]];
 	}
 	return Position;
+}
+
+void AProceduralRacetrackActor::PrintTrack()
+{
+	UE_LOG(LogTemp, Warning, TEXT("PRINTING TRACK"));
+	for (auto TrackSection : Track)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("STEP"));
+		UE_LOG(LogTemp, Warning, TEXT("Position: %s"), *TrackSection.Position.ToString());
+		UE_LOG(LogTemp, Warning, TEXT("Rotation: %s"), *TrackSection.ForwardRotation.ToString());
+	}
 }
 
 

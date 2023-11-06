@@ -12,4 +12,9 @@ UClass* URacingGameInstance::GetRoadMeshClass() const
   return RoadSplineMeshClass.Get();
  }
 
+ UClass* URacingGameInstance::GetFuelPickupClass() const
+ {
+  return FuelPickupClass.Get();
+ }
+
 
