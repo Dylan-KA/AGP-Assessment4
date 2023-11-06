@@ -64,6 +64,7 @@ void AProceduralRacetrackActor::GenerateRacetrackLevel()
 {
 	ClearTrackMeshes();
 	// if on the server generate the racetrack level details
+	// then replicate them to the client
 	if(GetNetMode() < ENetMode::NM_Client)
 	{
 		ClearTrackValues(); 
@@ -76,7 +77,6 @@ void AProceduralRacetrackActor::GenerateRacetrackLevel()
 		SpawnTrack();
 		SpawnTrees();
 	}
-	// spawn the track and trees on both server and client
 	
 }
 
@@ -85,12 +85,7 @@ void AProceduralRacetrackActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	Time += DeltaTime;
-	//UE_LOG(LogTemp, Error, TEXT("Time: %f"), Time)
-	// wait for both server and client begin play to finish before generating level
-	//if(Time > 5 && !bHasGenerated)
-	//{
-
-	//}
+	
 }
 
 void AProceduralRacetrackActor::GenerateGrid()
@@ -119,7 +114,7 @@ void AProceduralRacetrackActor::InitialiseIndexes()
 	UE_LOG(LogTemp, Warning, TEXT("Height : %d"), Height);
 	UE_LOG(LogTemp, Warning, TEXT("Width : %d"), Width);
 	
-	// ignore the left and right rows
+	// Ignore the left and right rows
 	for(int32 i = 1; i < Width - 1; i++)
 	{
 		TopEdgeIndexes.Add((Width * Height - 1) - i);
