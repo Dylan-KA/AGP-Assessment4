@@ -46,9 +46,9 @@ public:
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	FVector GetStartPosition() const;
+	FTrackSection GetTrackStart() const;
 
-	FVector GetEndPosition() const;
+	FTrackSection GetTrackEnd() const;
 
 	bool HasGenerated() const;
 

@@ -26,15 +26,17 @@ void AProceduralRacetrackActor::GetLifetimeReplicatedProps(TArray<FLifetimePrope
 	DOREPLIFETIME(AProceduralRacetrackActor, TreeValues); 
 }
 
-FVector AProceduralRacetrackActor::GetStartPosition() const
+FTrackSection AProceduralRacetrackActor::GetTrackStart() const
 {
-	return StartPosition;
+	return Track[0]; 
 }
 
-FVector AProceduralRacetrackActor::GetEndPosition() const
+FTrackSection AProceduralRacetrackActor::GetTrackEnd() const
 {
-	return EndPosition;
+	return Track.Top(); 
+
 }
+
 
 bool AProceduralRacetrackActor::HasGenerated() const
 {
