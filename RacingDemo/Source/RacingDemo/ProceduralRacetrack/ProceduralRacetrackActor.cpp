@@ -5,6 +5,8 @@
 #include "ProceduralMeshComponent.h"
 #include "RacingDemo/GameManagers/RacingGameInstance.h"
 #include "Components/SplineMeshComponent.h"
+#include "GameFramework/GameStateBase.h"
+#include "GameFramework/PlayerState.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Net/UnrealNetwork.h"
 
@@ -79,6 +81,7 @@ void AProceduralRacetrackActor::GenerateRacetrackLevel()
 		GenerateTrees();
 		SpawnTrack();
 		SpawnTrees();
+		MovePlayersToStart();
 	}
 	
 }
@@ -358,6 +361,43 @@ void AProceduralRacetrackActor::SpawnTrees()
 			TreeMeshComponent->SetStaticMesh(TreeMeshes[TreeValue.MeshIndex]);
 		}
 		TreeMeshActors.Add(TreeMeshActor);
+	}
+}
+
+// Currently only works in standalone
+// Need to execute this code after all players have been spawned in
+void AProceduralRacetrackActor::MovePlayersToStart()
+{
+	if (HasGenerated())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("HAS GENERATED: MOVING PLAYERS TO START"))
+
+		// Calculate start positions
+		FVector ForwardVector = GetTrackStart().ForwardRotation.Vector();
+		FVector OffsetVector = 400.0f * FVector(-ForwardVector.Y, ForwardVector.X, ForwardVector.Z);  // Offset to the right
+
+		FVector StartPosition1 = GetTrackStart().Position - OffsetVector;
+		FVector StartPosition2 = GetTrackStart().Position + OffsetVector;
+	
+		// Used to determine whether to spawn in StartPosition 1 or 2.
+		int32 PlayerCountIndex = 0;
+		
+		// A PlayerState is created for every player on the server (or standalone)
+		for (APlayerState* PlayerState : GetWorld()->GetGameState()->PlayerArray)
+		{
+			if (PlayerCountIndex == 0) // Spawn first player to the left 
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Spawning Player to the left"))
+				PlayerState->GetPawn()->SetActorLocationAndRotation(StartPosition1, GetTrackStart().ForwardRotation,
+					false, nullptr, ETeleportType::TeleportPhysics);
+				PlayerCountIndex += 1;
+			} else if (PlayerCountIndex == 1) // Spawn second player to the right 
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Spawning Player to the right"))
+				PlayerState->GetPawn()->SetActorLocationAndRotation(StartPosition2, GetTrackStart().ForwardRotation,
+					false, nullptr, ETeleportType::TeleportPhysics);
+			}
+		}
 	}
 }
 

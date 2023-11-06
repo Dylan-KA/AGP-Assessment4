@@ -125,7 +125,10 @@ private:
 	UFUNCTION()
 	void SpawnTrees();
 
-
+	// Gets all vehicle pawns and based on the number of players,
+	// positions them appropriately at the start of the track
+	void MovePlayersToStart();
+	
 	// Helper Function 
 	FVector GetPointOnEdge(int32 EdgeIndex);
 	void PrintTrack();
