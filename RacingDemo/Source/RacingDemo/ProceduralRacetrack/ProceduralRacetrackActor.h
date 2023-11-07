@@ -7,6 +7,7 @@
 #include "GameFramework/Actor.h"
 #include "RacingDemo/Pathfinding/PathfindingSubsystem.h"
 #include "RoadSplineMeshActor.h"
+#include "RacingDemo/Pickups/FuelPickup.h"
 #include "ProceduralRacetrackActor.generated.h"
 
 USTRUCT()
@@ -31,6 +32,13 @@ public:
 	FVector Position;
 	UPROPERTY()
 	FRotator ForwardRotation;
+	UPROPERTY()
+	FVector Midpoint; 
+
+	bool operator==(const FTrackSection& Other)
+	{
+		return (Position == Other.Position && ForwardRotation == Other.ForwardRotation); 
+	}
 };
 
 
@@ -93,6 +101,8 @@ protected:
 	TArray<AStaticMeshActor*> TreeMeshActors;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<UStaticMesh*> TreeMeshes;
+	UPROPERTY()
+	TArray<AFuelPickup*> FuelPickups;
 	
 	UPROPERTY(EditAnywhere)
 	bool bHasGenerated = false;
@@ -132,6 +142,7 @@ private:
 	// Helper Function 
 	FVector GetPointOnEdge(int32 EdgeIndex);
 	void PrintTrack();
+	FVector GetRelativePosition(FVector Position, FRotator ForwardRotation, FString Direction); 
 
 	// Indexes of Grid
 	TArray<int32> BottomEdgeIndexes;
@@ -146,7 +157,7 @@ private:
 	FVector Checkpoint2;
 	FVector EndPosition;
 
-	TArray<FVector> PossibleTrackSpawnPositions;
+	TArray<FTrackSection> PossibleTrackSpawnPositions;
 
 	// Replicated properties
 	// Track is generated on server and replicated to clients
