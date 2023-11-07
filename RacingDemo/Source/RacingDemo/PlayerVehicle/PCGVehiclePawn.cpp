@@ -18,7 +18,8 @@ APCGVehiclePawn::APCGVehiclePawn()
 	SetupLightComponents();
 	
 	bReplicates = true;
-	
+	bAlwaysRelevant = true;
+
 }
 
 void APCGVehiclePawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -41,7 +42,7 @@ void APCGVehiclePawn::BeginPlay()
 	if (GetNetMode() == NM_ListenServer)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("NetMode is ListenServer"))
-		ProceduralComponent->GenerateRandomVehicle(VehicleRarity, VehicleStats);
+		//ProceduralComponent->GenerateRandomVehicle(VehicleRarity, VehicleStats);
 		ApplyWeightDistribution();
 		FuelComponent->SetCurrentFuel(VehicleStats.MaxFuelCapacity);
 

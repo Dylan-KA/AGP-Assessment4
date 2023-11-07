@@ -7,28 +7,22 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="57555110-35df-4c30-b080-f934143ae774" name="Changes" comment="" />
+    <list default="true" id="4eb7658d-caa3-41a3-97e5-3e849d840c6e" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
-  </component>
-  <component name="ProjectId" id="2XmWMV5lLRR8sQbZ7SpfPvmuJj3" />
+  <component name="ProjectId" id="2XpCGoiw3W4ZZa2zxADjnjDdQsZ" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "Notification.DisplayName-DoNotAsk-Vcs Important Messages": "VCS important messages",
-    "Notification.DoNotAsk-Vcs Important Messages": "true",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "main",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -104,13 +98,12 @@
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="57555110-35df-4c30-b080-f934143ae774" name="Changes" comment="" />
-      <created>1699234688450</created>
+      <changelist id="4eb7658d-caa3-41a3-97e5-3e849d840c6e" name="Changes" comment="" />
+      <created>1699316541286</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1699234688450</updated>
-      <workItem from="1699234689743" duration="187000" />
-      <workItem from="1699244985018" duration="6653000" />
+      <updated>1699316541286</updated>
+      <workItem from="1699316542527" duration="4482000" />
     </task>
     <servers />
   </component>
