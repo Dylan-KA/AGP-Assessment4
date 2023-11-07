@@ -19,6 +19,7 @@ AProceduralRacetrackActor::AProceduralRacetrackActor()
 	
 	ProceduralMesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("Procedural Mesh"));
 	SetRootComponent(ProceduralMesh);
+	
 }
 
 void AProceduralRacetrackActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -81,7 +82,7 @@ void AProceduralRacetrackActor::GenerateRacetrackLevel()
 		GenerateTrees();
 		SpawnTrack();
 		SpawnTrees();
-		
+		SpawnFinishLine();
 	}
 	
 }
@@ -361,6 +362,17 @@ void AProceduralRacetrackActor::SpawnTrees()
 			TreeMeshComponent->SetStaticMesh(TreeMeshes[TreeValue.MeshIndex]);
 		}
 		TreeMeshActors.Add(TreeMeshActor);
+	}
+}
+
+void AProceduralRacetrackActor::SpawnFinishLine()
+{
+	if (const URacingGameInstance* GameInstance = GetWorld()->GetGameInstance<URacingGameInstance>())
+	{
+		FRotator FinishRotation = FRotator(0,0,GetTrackEnd().ForwardRotation.Roll);
+
+		ARacetrackFinishLine* FinishLine = GetWorld()->SpawnActor<ARacetrackFinishLine>(
+			GameInstance->GetFinishLineClass(), GetTrackEnd().Position, FinishRotation);
 	}
 }
 

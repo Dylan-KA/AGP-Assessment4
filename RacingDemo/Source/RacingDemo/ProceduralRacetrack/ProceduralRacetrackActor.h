@@ -7,6 +7,7 @@
 #include "GameFramework/Actor.h"
 #include "RacingDemo/Pathfinding/PathfindingSubsystem.h"
 #include "RoadSplineMeshActor.h"
+#include "RacetrackFinishLine.h"
 #include "ProceduralRacetrackActor.generated.h"
 
 USTRUCT()
@@ -124,6 +125,9 @@ private:
 	// spawns in trees
 	UFUNCTION()
 	void SpawnTrees();
+
+	// Spawns in a collision box at the finish line
+	void SpawnFinishLine();
 	
 	// Helper Function 
 	FVector GetPointOnEdge(int32 EdgeIndex);
