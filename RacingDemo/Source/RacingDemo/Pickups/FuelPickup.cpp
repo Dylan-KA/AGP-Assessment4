@@ -2,7 +2,6 @@
 
 
 #include "FuelPickup.h"
-
 #include "RacingDemo/PlayerVehicle/PCGVehiclePawn.h"
 
 void AFuelPickup::OnPickupOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
