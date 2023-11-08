@@ -79,7 +79,7 @@ public:
 
 	// Current rarity of the vehicle
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = SetVehicleVisuals)
-	EVehicleRarity VehicleRarity;
+	EVehicleRarity VehicleRarity = EVehicleRarity::Default;
 
 	// FuelComponent
 	UPROPERTY(BlueprintReadOnly, Replicated)
