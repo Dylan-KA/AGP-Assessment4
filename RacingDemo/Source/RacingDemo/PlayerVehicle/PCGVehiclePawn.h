@@ -73,10 +73,6 @@ public:
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = SetVehicleProcedural)
 	FVehicleStats VehicleStats;
 
-	// Vehicle HUD
-	UPROPERTY()
-	UVehicleHUD* VehicleHUD;
-
 	// Current rarity of the vehicle
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = SetVehicleVisuals)
 	EVehicleRarity VehicleRarity = EVehicleRarity::Default;
@@ -85,6 +81,10 @@ public:
 	UPROPERTY(BlueprintReadOnly, Replicated)
 	UFuelComponent* FuelComponent;
 
+	// Vehicle HUD
+	UPROPERTY()
+	UVehicleHUD* VehicleHUD;
+	
 	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 protected:
@@ -95,11 +95,11 @@ protected:
 	UPROPERTY()
 	UProceduralComponent* ProceduralComponent;
 	
-	// ChaosVehicleMovementComponent used for getting current speed of vehicle
+	// Used for getting current speed and gear of vehicle
 	UPROPERTY()
 	UChaosVehicleMovementComponent* MyVehicleMovementComponent;
 
-	// Procedural Vehicle Material
+	// Procedural Vehicle Material which defaults to black
 	UPROPERTY(VisibleAnywhere)
 	UMaterialInterface* ProceduralMaterial;
 
@@ -129,7 +129,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UVehicleHUD> VehicleHUDClass;
 
-	// Vehicle HUD
+	// Vehicle HUD helper funcitons
 	UFUNCTION()
 	void DrawUI();
 	UFUNCTION()
@@ -138,9 +138,11 @@ protected:
 	// Called during tick function to handle empty fuel
 	void ManageFuel(float DeltaTime);
 
-	// Player Controller / Movement
-	UPROPERTY(EditDefaultsOnly)
-	UInputMappingContext* InputMappingContext;
+	// Functions called when properties are replicated
+	UFUNCTION()
+	void SetVehicleVisuals();
+	UFUNCTION()
+	void SetVehicleProcedural();
 	
 public:	
 	// Called every frame
@@ -153,19 +155,11 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "PCG Vehicle Pawn")
 	void ApplyWeightDistribution();
 
-	// Timer for how long it takes to finish the race
+	// Timer for how long the vehicle has been driving for
 	void Timer();
 	UPROPERTY()
 	int32 Minutes = 0;
 	UPROPERTY()
 	int32 Seconds = 0;
-	
-private:
-
-	UFUNCTION()
-	void SetVehicleVisuals();
-
-	UFUNCTION()
-	void SetVehicleProcedural();
 	
 };
