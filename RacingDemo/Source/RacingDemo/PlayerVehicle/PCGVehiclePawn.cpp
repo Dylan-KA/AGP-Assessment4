@@ -2,7 +2,9 @@
 
 #include "PCGVehiclePawn.h"
 #include "ChaosVehicleMovementComponent.h"
+#include "GameFramework/GameModeBase.h"
 #include "Net/UnrealNetwork.h"
+#include "RacingDemo/GameManagers/MyRacingGameMode.h"
 #include "UObject/Class.h"
 #include "RacingDemo/GameManagers/RacingGameInstance.h"
 
@@ -50,8 +52,7 @@ void APCGVehiclePawn::BeginPlay()
 		SetUnderGlowColour();
 
 		// Start the race timer
-		FTimerHandle TimerHandle;
-		GetWorldTimerManager().SetTimer(TimerHandle, this, &APCGVehiclePawn::Timer, 1.0f, true,
+		GetWorldTimerManager().SetTimer(TimerHandle, this, &APCGVehiclePawn::RaceTimer, 1.0f, true,
 			1.5f);
 	} else if (GetNetMode() == NM_DedicatedServer)
 	{
@@ -61,8 +62,7 @@ void APCGVehiclePawn::BeginPlay()
 		FuelComponent->SetCurrentFuel(VehicleStats.MaxFuelCapacity);
 
 		// Start the race timer
-		FTimerHandle TimerHandle;
-		GetWorldTimerManager().SetTimer(TimerHandle, this, &APCGVehiclePawn::Timer, 1.0f, true,
+		GetWorldTimerManager().SetTimer(TimerHandle, this, &APCGVehiclePawn::RaceTimer, 1.0f, true,
 			1.5f);
 	}
 	
@@ -78,16 +78,14 @@ void APCGVehiclePawn::BeginPlay()
 		DrawUI();
 
 		// Start the race timer
-		FTimerHandle TimerHandle;
-		GetWorldTimerManager().SetTimer(TimerHandle, this, &APCGVehiclePawn::Timer, 1.0f, true,
+		GetWorldTimerManager().SetTimer(TimerHandle, this, &APCGVehiclePawn::RaceTimer, 1.0f, true,
 			0.0f);
 	}
 
 	if (GetNetMode() == NM_Client)
 	{
 		// Start the race timer
-		FTimerHandle TimerHandle;
-		GetWorldTimerManager().SetTimer(TimerHandle, this, &APCGVehiclePawn::Timer, 1.0f, true,
+		GetWorldTimerManager().SetTimer(TimerHandle, this, &APCGVehiclePawn::RaceTimer, 1.0f, true,
 			0.0f);
 	}
 }
@@ -301,7 +299,7 @@ void APCGVehiclePawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	
 }
 
-void APCGVehiclePawn::Timer()
+void APCGVehiclePawn::RaceTimer()
 {
 	if (Seconds != 59)
 	{
@@ -311,6 +309,39 @@ void APCGVehiclePawn::Timer()
 		Seconds = 0;
 		Minutes += 1;
 	}
+}
+
+void APCGVehiclePawn::StartRestartTimer()
+{
+	FTimerHandle RestartTimerHandle;
+	GetWorldTimerManager().SetTimer(RestartTimerHandle, this, &APCGVehiclePawn::RestartTimer,
+		1.0f, true,0.0f);
+}
+
+void APCGVehiclePawn::RestartTimer()
+{
+	VehicleHUD->UpdateRestartTimer(RestartSeconds);
+	if (RestartSeconds == 0)
+	{
+		VehicleHUD->UpdateRestartTimer(-1);
+		// VehiclePawn on Server restarts the game
+		if (GetNetMode() != NM_Standalone)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Telling Server to Restart the race"))
+			ServerRestart();
+		} else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("IN STANDALONE: Restarting the race"))
+			ServerRestart_Implementation();
+		}
+	}
+	RestartSeconds -= 1;
+}
+
+void APCGVehiclePawn::ServerRestart_Implementation()
+{
+	AMyRacingGameMode* GameMode = Cast<AMyRacingGameMode>(GetWorld()->GetAuthGameMode());
+	GameMode->RestartRace();
 }
 
 // Called when the rarity is changed and replicated to the client

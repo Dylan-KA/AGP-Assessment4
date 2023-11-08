@@ -52,3 +52,14 @@ void UVehicleHUD::UpdateRaceTimer(int32 NewMinutes, int32 NewSeconds)
 	MinutesText->SetText(FText::FromString(FString::FromInt(NewMinutes)));
 	SecondsText->SetText(FText::FromString(FString::FromInt(NewSeconds)));
 }
+
+void UVehicleHUD::UpdateRestartTimer(int32 RestartSeconds)
+{
+	if (RestartSeconds != -1)
+	{
+		RestartText->SetText(FText::FromString(FString::FromInt(RestartSeconds)));
+	} else
+	{
+		RestartText->SetText(FText::GetEmpty());
+	}
+}

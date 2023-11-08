@@ -2,6 +2,8 @@
 
 
 #include "RacetrackFinishLine.h"
+
+#include "RacingDemo/GameManagers/MyRacingGameMode.h"
 #include "RacingDemo/PlayerVehicle/PCGVehiclePawn.h"
 
 // Sets default values
@@ -46,6 +48,11 @@ void ARacetrackFinishLine::OnFinishOverlap(UPrimitiveComponent* OverlappedCompon
 	if (APCGVehiclePawn* VehiclePawn = Cast<APCGVehiclePawn>(OtherActor))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("A Vehicle has reached the finish line"))
+		FTimerHandle TimerHandle;
+		// Start the restart timer
+		AMyRacingGameMode* GameMode = Cast<AMyRacingGameMode>(GetWorld()->GetAuthGameMode());
+		GameMode->StartRestartTimer();
+
 	}
 }
 

@@ -156,10 +156,19 @@ public:
 	void ApplyWeightDistribution();
 
 	// Timer for how long the vehicle has been driving for
-	void Timer();
+	void RaceTimer();
+	void StartRestartTimer();
+	void RestartTimer();
+	UFUNCTION(Server, Reliable)
+	void ServerRestart();
+
+	FTimerHandle TimerHandle;
+	
 	UPROPERTY()
 	int32 Minutes = 0;
 	UPROPERTY()
 	int32 Seconds = 0;
+	UPROPERTY()
+	int32 RestartSeconds = 3;
 	
 };
