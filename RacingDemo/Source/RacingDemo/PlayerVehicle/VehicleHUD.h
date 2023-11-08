@@ -20,6 +20,7 @@ public:
 	void SetGearText(int32 NewGear);
 	void SetFuelText(float NewFuel);
 	void SetFuelColour(bool OutOfFuel);
+	void UpdateRaceTimer(int32 NewMinutes, int32 NewSeconds);
 	
 protected:
 
@@ -31,5 +32,10 @@ protected:
 
 	UPROPERTY(EditAnywhere, meta=(BindWidget))
 	class UTextBlock* FuelText;
-	
+
+	UPROPERTY(EditAnywhere, meta=(BindWidget))
+	class UTextBlock* MinutesText;
+
+	UPROPERTY(EditAnywhere, meta=(BindWidget))
+	class UTextBlock* SecondsText;
 };

@@ -46,3 +46,9 @@ void UVehicleHUD::SetFuelColour(bool OutOfFuel)
 		}
 	}
 }
+
+void UVehicleHUD::UpdateRaceTimer(int32 NewMinutes, int32 NewSeconds)
+{
+	MinutesText->SetText(FText::FromString(FString::FromInt(NewMinutes)));
+	SecondsText->SetText(FText::FromString(FString::FromInt(NewSeconds)));
+}

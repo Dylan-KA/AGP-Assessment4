@@ -134,7 +134,7 @@ protected:
 	void DrawUI();
 	UFUNCTION()
 	void UpdateUI();
-
+	
 	// Called during tick function to handle empty fuel
 	void ManageFuel(float DeltaTime);
 
@@ -153,6 +153,13 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "PCG Vehicle Pawn")
 	void ApplyWeightDistribution();
 
+	// Timer for how long it takes to finish the race
+	void Timer();
+	UPROPERTY()
+	int32 Minutes = 0;
+	UPROPERTY()
+	int32 Seconds = 0;
+	
 private:
 
 	UFUNCTION()

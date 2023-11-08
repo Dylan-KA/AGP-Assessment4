@@ -48,15 +48,25 @@ void APCGVehiclePawn::BeginPlay()
 
 		GenerateProceduralMaterial();
 		SetUnderGlowColour();
+
+		// Start the race timer
+		FTimerHandle TimerHandle;
+		GetWorldTimerManager().SetTimer(TimerHandle, this, &APCGVehiclePawn::Timer, 1.0f, true,
+			1.5f);
 	} else if (GetNetMode() == NM_DedicatedServer)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("NetMode is DedicatedServer"))
 		ProceduralComponent->GenerateRandomVehicle(VehicleRarity, VehicleStats);
 		ApplyWeightDistribution();
 		FuelComponent->SetCurrentFuel(VehicleStats.MaxFuelCapacity);
+
+		// Start the race timer
+		FTimerHandle TimerHandle;
+		GetWorldTimerManager().SetTimer(TimerHandle, this, &APCGVehiclePawn::Timer, 1.0f, true,
+			1.5f);
 	}
 	
-	// Initial setup for standalone 
+	// Initial setup for standalone singeplayer
 	if (GetNetMode() == NM_Standalone)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("NetMode is Standalone"))
@@ -66,6 +76,19 @@ void APCGVehiclePawn::BeginPlay()
 		SetUnderGlowColour();
 		FuelComponent->SetCurrentFuel(VehicleStats.MaxFuelCapacity);
 		DrawUI();
+
+		// Start the race timer
+		FTimerHandle TimerHandle;
+		GetWorldTimerManager().SetTimer(TimerHandle, this, &APCGVehiclePawn::Timer, 1.0f, true,
+			0.0f);
+	}
+
+	if (GetNetMode() == NM_Client)
+	{
+		// Start the race timer
+		FTimerHandle TimerHandle;
+		GetWorldTimerManager().SetTimer(TimerHandle, this, &APCGVehiclePawn::Timer, 1.0f, true,
+			0.0f);
 	}
 }
 
@@ -221,6 +244,7 @@ void APCGVehiclePawn::UpdateUI()
 		}
 
 		VehicleHUD->SetFuelText(FuelComponent->GetCurrentFuel());
+		VehicleHUD->UpdateRaceTimer(Minutes, Seconds);
 	}
 }
 
@@ -275,6 +299,18 @@ void APCGVehiclePawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	
+}
+
+void APCGVehiclePawn::Timer()
+{
+	if (Seconds != 59)
+	{
+		Seconds += 1;
+	} else
+	{
+		Seconds = 0;
+		Minutes += 1;
+	}
 }
 
 // Called when the rarity is changed and replicated to the client
