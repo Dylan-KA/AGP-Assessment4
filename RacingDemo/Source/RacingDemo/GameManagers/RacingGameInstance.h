@@ -6,6 +6,8 @@
 #include "WheeledVehiclePawn.h"
 #include "RacingDemo/ProceduralRacetrack/RacetrackFinishLine.h"
 #include "RacingDemo/ProceduralRacetrack/RoadSplineMeshActor.h"
+#include "RacingDemo/Pickups/FuelPickup.h"
+#include "RacingDemo/ProceduralRacetrack/RampActor.h"
 #include "RacingGameInstance.generated.h"
 
 /**
@@ -24,6 +26,8 @@ public:
 
 	UClass* GetVehiclePlayerController() const;
 
+	UClass* GetRampClass() const;
+
 	UClass* GetFuelPickupClass() const;
 
 	UClass* GetFinishLineClass() const;
@@ -40,8 +44,11 @@ protected:
 	TSubclassOf<APlayerController> VehiclePlayerController;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Fuel Pickup Classes")
-	TSubclassOf<ARoadSplineMeshActor> FuelPickupClass;
+	TSubclassOf<AFuelPickup> FuelPickupClass;
 
+	UPROPERTY(EditDefaultsOnly, Category="Ramp Classes")
+	TSubclassOf<ARampActor> RampClass;
+	
 	UPROPERTY(EditDefaultsOnly, Category="Finish Line Class")
 	TSubclassOf<ARacetrackFinishLine> FinishLineClass;
 	
