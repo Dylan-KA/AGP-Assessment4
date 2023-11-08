@@ -95,7 +95,6 @@ void AProceduralRacetrackActor::GenerateRacetrackLevel()
 void AProceduralRacetrackActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	Time += DeltaTime;
 	
 }
 
@@ -380,10 +379,11 @@ void AProceduralRacetrackActor::SpawnTrees()
 
 void AProceduralRacetrackActor::SpawnFuelPickups()
 {
-	// add all track positions to the possible spawns list
-	for (auto TrackSection : Track)
+	// add track positions to the possible spawns list
+	// Ignore the first and last two points
+	for (int i = 2; i < Track.Num() - 2; i++)
 	{
-		PossibleTrackSpawnPositions.Add(TrackSection);
+		PossibleTrackSpawnPositions.Add(Track[i]);
 	}
 	// Number of fuel pickups is  dependent on length of the track
 	for(int i = 0; i < Track.Num()/10; i++)

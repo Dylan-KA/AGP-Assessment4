@@ -114,9 +114,6 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 private:
-	float Time;
-
-	
 	// Loop through width and height to get the appropriate grid positions
 	void GenerateGrid();
 	// Find the top, bottom, left and right edge indexes and store them in the appropriate array
