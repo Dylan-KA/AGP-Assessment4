@@ -4,6 +4,8 @@
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
 #include "WheeledVehiclePawn.h"
+#include "RacingDemo/Pickups/FuelPickup.h"
+#include "RacingDemo/ProceduralRacetrack/RampActor.h"
 #include "RacingDemo/ProceduralRacetrack/RoadSplineMeshActor.h"
 #include "RacingGameInstance.generated.h"
 
@@ -24,6 +26,9 @@ public:
 	UClass* GetVehiclePlayerController() const;
 
 	UClass* GetFuelPickupClass() const; 
+
+	UClass* GetRampClass() const; 
+
 protected:
 
 	UPROPERTY(EditDefaultsOnly, Category="Vehicle Class")
@@ -36,6 +41,9 @@ protected:
 	TSubclassOf<APlayerController> VehiclePlayerController;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Fuel Pickup Classes")
-	TSubclassOf<ARoadSplineMeshActor> FuelPickupClass;
+	TSubclassOf<AFuelPickup> FuelPickupClass;
+
+	UPROPERTY(EditDefaultsOnly, Category="Ramp Classes")
+	TSubclassOf<ARampActor> RampClass;
 	
 };
