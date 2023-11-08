@@ -82,6 +82,7 @@ void AProceduralRacetrackActor::GenerateRacetrackLevel()
 		SpawnTrack();
 		SpawnTrees();
 		SpawnFuelPickups();
+		SpawnRamps();
 	}
 	
 }
@@ -412,6 +413,41 @@ void AProceduralRacetrackActor::SpawnFuelPickups()
 			FuelPickups.Add(FuelPickupRight);
 		}
 		//Remove position from list
+		PossibleTrackSpawnPositions.Remove(TrackSection);
+	}
+}
+
+void AProceduralRacetrackActor::SpawnRamps()
+{
+	for(int i = 0; i < Track.Num()/8; i++)
+	{
+		FVector SpawnPosition;
+		int32 RandomDirection = FMath::RandRange(1,3);
+		FTrackSection TrackSection = PossibleTrackSpawnPositions[FMath::RandRange(0,PossibleTrackSpawnPositions.Num()-1)];
+		FVector CentrePosition = TrackSection.Midpoint;
+
+		switch (RandomDirection)
+		{
+		case 1:
+			SpawnPosition = CentrePosition;
+			 break;
+		case 2:
+			SpawnPosition = GetRelativePosition(CentrePosition, TrackSection.ForwardRotation, "Right");
+			break;
+		case 3:
+			SpawnPosition = GetRelativePosition(CentrePosition, TrackSection.ForwardRotation, "Left");
+			break;
+		default:
+			UE_LOG(LogTemp, Warning, TEXT("Invalid Direction"));
+			break;
+		}
+
+		if(const URacingGameInstance* GameInstance =
+			GetWorld()->GetGameInstance<URacingGameInstance>())
+		{
+			ARampActor* RampActor = GetWorld()->SpawnActor<ARampActor>(GameInstance->GetRampClass(), SpawnPosition, TrackSection.ForwardRotation);
+			Ramps.Add(RampActor);
+		}
 		PossibleTrackSpawnPositions.Remove(TrackSection);
 	}
 }

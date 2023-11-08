@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "RampActor.h"
 #include "Engine/StaticMeshActor.h"
 #include "GameFramework/Actor.h"
 #include "RacingDemo/Pathfinding/PathfindingSubsystem.h"
@@ -103,6 +104,8 @@ protected:
 	TArray<UStaticMesh*> TreeMeshes;
 	UPROPERTY()
 	TArray<AFuelPickup*> FuelPickups;
+	UPROPERTY()
+	TArray<ARampActor*> Ramps; 
 	
 	UPROPERTY(EditAnywhere)
 	bool bHasGenerated = false;
@@ -136,7 +139,8 @@ private:
 	UFUNCTION()
 	void SpawnTrees();
 
-	void SpawnFuelPickups(); 
+	void SpawnFuelPickups();
+	void SpawnRamps();
 
 
 	// Helper Function 
