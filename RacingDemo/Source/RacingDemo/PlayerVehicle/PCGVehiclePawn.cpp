@@ -220,7 +220,7 @@ void APCGVehiclePawn::UpdateUI()
 	{
 		if (!VehicleHUD)
 		{
-			UE_LOG(LogTemp, Error, TEXT("VehicleHUD is NULL, attempting to create"));
+			//UE_LOG(LogTemp, Error, TEXT("VehicleHUD is NULL, attempting to create"));
 			DrawUI();
 			return;
 		}

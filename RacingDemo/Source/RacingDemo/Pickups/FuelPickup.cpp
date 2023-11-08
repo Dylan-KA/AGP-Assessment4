@@ -7,10 +7,11 @@
 void AFuelPickup::OnPickupOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
                                   UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& HitInfo)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Overlap event occurred in FuelPickup"))
 	APCGVehiclePawn* VehiclePawn = Cast<APCGVehiclePawn>(OtherActor);
 	if(VehiclePawn)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("FuelPickup collided with VehiclePawn with LocalRole: %d"), GetLocalRole())
+
 		// Adds fuel to the vehicle then removes pickup.
 		UFuelComponent* FuelComponent = VehiclePawn->GetComponentByClass<UFuelComponent>();
 		if(FuelComponent)

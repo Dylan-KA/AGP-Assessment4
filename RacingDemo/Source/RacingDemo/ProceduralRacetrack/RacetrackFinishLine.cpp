@@ -11,10 +11,9 @@ ARacetrackFinishLine::ARacetrackFinishLine()
 	PrimaryActorTick.bCanEverTick = true;
 
 	FinishCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("Finish Collider"));
-	FinishCollider->SetupAttachment(GetRootComponent());
-
-	bReplicates = true;
+	SetRootComponent(FinishCollider);
 	
+	bReplicates = true;
 }
 
 // Called when the game starts or when spawned
