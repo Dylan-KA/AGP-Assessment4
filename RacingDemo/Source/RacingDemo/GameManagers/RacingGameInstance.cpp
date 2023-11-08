@@ -22,9 +22,9 @@ UClass* URacingGameInstance::GetRoadMeshClass() const
   return FuelPickupClass.Get();
  }
 
- UClass* URacingGameInstance::GetRampClass() const
+ UClass* URacingGameInstance::GetFinishLineClass() const
  {
-  return RampClass.Get();
+  return FinishLineClass.Get();
  }
 
 
