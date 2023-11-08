@@ -279,7 +279,7 @@ void APCGVehiclePawn::Tick(float DeltaTime)
 	{
 		if (GetController() == nullptr)
 		{
-			UE_LOG(LogTemp, Error, TEXT("Controller is null on AutonomousProxy, attempting to create a new one"))
+			//UE_LOG(LogTemp, Error, TEXT("Controller is null on AutonomousProxy, attempting to create a new one"))
 			if (const URacingGameInstance* GameInstance = GetWorld()->GetGameInstance<URacingGameInstance>())
 			{
 				// Get blueprint implementation of 
@@ -317,7 +317,7 @@ void APCGVehiclePawn::Timer()
 void APCGVehiclePawn::SetVehicleVisuals()
 {
 	FText VehicleRarityText = UEnum::GetDisplayValueAsText(VehicleRarity);
-	UE_LOG(LogTemp, Warning, TEXT("RARITY REPLICATED ON CLIENT: %s"), *VehicleRarityText.ToString())
+	//UE_LOG(LogTemp, Warning, TEXT("RARITY REPLICATED ON CLIENT: %s"), *VehicleRarityText.ToString())
 
 	GenerateProceduralMaterial();
 	SetUnderGlowColour();
@@ -328,7 +328,7 @@ void APCGVehiclePawn::SetVehicleVisuals()
 // Called when the VehicleStats is changed and replicated to the client
 void APCGVehiclePawn::SetVehicleProcedural()
 {
-	UE_LOG(LogTemp, Warning, TEXT("VEHICLE STATS REPLICATED ON CLIENT: %s"), *VehicleStats.ToString())
+	//UE_LOG(LogTemp, Warning, TEXT("VEHICLE STATS REPLICATED ON CLIENT: %s"), *VehicleStats.ToString())
 	ApplyWeightDistribution();
 	FuelComponent->SetCurrentFuel(VehicleStats.MaxFuelCapacity);
 }
