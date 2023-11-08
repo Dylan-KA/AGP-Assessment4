@@ -369,13 +369,13 @@ void AProceduralRacetrackActor::SpawnFinishLine()
 {
 	if (const URacingGameInstance* GameInstance = GetWorld()->GetGameInstance<URacingGameInstance>())
 	{
-		FRotator FinishRotation = FRotator(0,0,GetTrackEnd().ForwardRotation.Roll);
-
 		ARacetrackFinishLine* FinishLine = GetWorld()->SpawnActor<ARacetrackFinishLine>(
-			GameInstance->GetFinishLineClass(), GetTrackEnd().Position, FinishRotation);
+			GameInstance->GetFinishLineClass(), GetTrackEnd().Position, FRotator::ZeroRotator);
+		
+		FinishLine->SetActorLocationAndRotation(GetTrackEnd().Position, GetTrackEnd().ForwardRotation,
+				false, nullptr, ETeleportType::TeleportPhysics);
 	}
 }
-
 
 FVector AProceduralRacetrackActor::GetPointOnEdge(int32 EdgeIndex)
 {

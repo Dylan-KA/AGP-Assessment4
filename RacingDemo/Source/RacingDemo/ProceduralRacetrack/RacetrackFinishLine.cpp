@@ -13,10 +13,7 @@ ARacetrackFinishLine::ARacetrackFinishLine()
 	FinishCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("Finish Collider"));
 	FinishCollider->SetupAttachment(GetRootComponent());
 
-	// Should only be on the server
-	bReplicates = false;
-	// The server should be responsible for determining if a vehicle has reached the finish line
-	// and what to do once this occurs
+	bReplicates = true;
 	
 }
 
@@ -25,6 +22,13 @@ void ARacetrackFinishLine::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// The server should be responsible for determining if a vehicle has reached the finish line
+	// and what to do once this occurs
+	if (GetNetMode() == NM_Client)
+	{
+		return;
+	}
+	
 	if (FinishCollider)
 	{
 		// This attaches OnFinishOverlap function to be called when the OnComponentBeginOverlap event is triggered.
