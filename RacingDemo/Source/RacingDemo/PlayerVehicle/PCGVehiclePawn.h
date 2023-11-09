@@ -157,12 +157,14 @@ public:
 
 	// Timer for how long the vehicle has been driving for
 	void RaceTimer();
+	UFUNCTION(NetMulticast, Reliable)
 	void StartRestartTimer();
 	void RestartTimer();
 	UFUNCTION(Server, Reliable)
 	void ServerRestart();
 
 	FTimerHandle TimerHandle;
+	FTimerHandle RestartTimerHandle;
 	
 	UPROPERTY()
 	int32 Minutes = 0;

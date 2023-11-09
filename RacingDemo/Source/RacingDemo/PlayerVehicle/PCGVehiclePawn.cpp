@@ -311,33 +311,40 @@ void APCGVehiclePawn::RaceTimer()
 	}
 }
 
-void APCGVehiclePawn::StartRestartTimer()
+// Multicast RPC, server tells all clients to start countdown
+void APCGVehiclePawn::StartRestartTimer_Implementation()
 {
-	FTimerHandle RestartTimerHandle;
 	GetWorldTimerManager().SetTimer(RestartTimerHandle, this, &APCGVehiclePawn::RestartTimer,
 		1.0f, true,0.0f);
 }
 
 void APCGVehiclePawn::RestartTimer()
 {
-	VehicleHUD->UpdateRestartTimer(RestartSeconds);
+	if (VehicleHUD)
+	{
+		VehicleHUD->UpdateRestartTimer(RestartSeconds);
+	}
 	if (RestartSeconds == 0)
 	{
-		VehicleHUD->UpdateRestartTimer(-1);
-		// VehiclePawn on Server restarts the game
-		if (GetNetMode() != NM_Standalone)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Telling Server to Restart the race"))
-			ServerRestart();
-		} else
+		// Single-player / Standalone
+		if (GetNetMode() == NM_Standalone)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("IN STANDALONE: Restarting the race"))
+			GetWorldTimerManager().ClearTimer(RestartTimerHandle);
 			ServerRestart_Implementation();
+		}
+		// Client tells Server to restart
+		if (GetNetMode() == NM_Client)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Telling Server to Restart the race"))
+			GetWorldTimerManager().ClearTimer(RestartTimerHandle);
+			ServerRestart();
 		}
 	}
 	RestartSeconds -= 1;
 }
 
+// Client tells Server to restart
 void APCGVehiclePawn::ServerRestart_Implementation()
 {
 	AMyRacingGameMode* GameMode = Cast<AMyRacingGameMode>(GetWorld()->GetAuthGameMode());
