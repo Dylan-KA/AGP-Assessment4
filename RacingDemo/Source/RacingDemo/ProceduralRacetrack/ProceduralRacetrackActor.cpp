@@ -253,7 +253,7 @@ void AProceduralRacetrackActor::SpawnTrack()
 
 				RoadMeshActors.Add(RoadMeshActor);
 				RoadMeshActor->GetSplineMeshComponent()->SetStartPosition(FVector(-200 ,0.0, 1.0 ));
-				RoadMeshActor->GetSplineMeshComponent()->SetEndPosition(FVector(Diff.Length(),0.0, 1.0 ));
+				RoadMeshActor->GetSplineMeshComponent()->SetEndPosition(FVector(Diff.Length() + 200,0.0, 1.0 ));
 				
 			}
 			
@@ -263,6 +263,7 @@ void AProceduralRacetrackActor::SpawnTrack()
 			{
 				StartFlagMeshActor = GetWorld()->SpawnActor<AStaticMeshActor>(MidPoint, Rotation);
 				StartFlagMeshActor->SetMobility(EComponentMobility::Stationary);
+				StartFlagMeshActor->SetActorScale3D(FVector(1,1.5,1));
 
 				UStaticMeshComponent* StartFlagMeshComponent = StartFlagMeshActor->GetStaticMeshComponent();
 				if (StartFlagMeshComponent)
