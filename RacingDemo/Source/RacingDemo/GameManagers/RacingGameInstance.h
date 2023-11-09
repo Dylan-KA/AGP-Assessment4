@@ -4,9 +4,10 @@
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
 #include "WheeledVehiclePawn.h"
+#include "RacingDemo/ProceduralRacetrack/RacetrackFinishLine.h"
+#include "RacingDemo/ProceduralRacetrack/RoadSplineMeshActor.h"
 #include "RacingDemo/Pickups/FuelPickup.h"
 #include "RacingDemo/ProceduralRacetrack/RampActor.h"
-#include "RacingDemo/ProceduralRacetrack/RoadSplineMeshActor.h"
 #include "RacingGameInstance.generated.h"
 
 /**
@@ -25,10 +26,12 @@ public:
 
 	UClass* GetVehiclePlayerController() const;
 
-	UClass* GetFuelPickupClass() const; 
+	UClass* GetRampClass() const;
 
-	UClass* GetRampClass() const; 
+	UClass* GetFuelPickupClass() const;
 
+	UClass* GetFinishLineClass() const;
+	
 protected:
 
 	UPROPERTY(EditDefaultsOnly, Category="Vehicle Class")
@@ -45,5 +48,8 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category="Ramp Classes")
 	TSubclassOf<ARampActor> RampClass;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Finish Line Class")
+	TSubclassOf<ARacetrackFinishLine> FinishLineClass;
 	
 };

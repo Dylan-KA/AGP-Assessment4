@@ -38,9 +38,12 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	void SetCurrentFuel(float NewFuel);
-	void AddFuel(float AddFuel);
+	void AddFuel(float NewFuel);
 	float GetCurrentFuel();
 
+	UFUNCTION(Client, Reliable)
+	void ClientAddFuel(float NewFuel);
+	
 	// Returns true if out of fuel, false if not 
 	UFUNCTION(BlueprintCallable)
 	bool IsOutOfFuel();

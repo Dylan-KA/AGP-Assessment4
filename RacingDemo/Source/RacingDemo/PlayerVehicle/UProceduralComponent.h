@@ -11,10 +11,11 @@ struct FVehicleStats;
 UENUM(BlueprintType)
 enum class EVehicleRarity : uint8
 {
-	Common = 0,
-	Rare = 1,
-	Master = 2,
-	Legendary = 3
+	Default = 0,
+	Common = 1,
+	Rare = 2,
+	Master = 3,
+	Legendary = 4
 };
 
 /**

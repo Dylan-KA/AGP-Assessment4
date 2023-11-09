@@ -21,6 +21,8 @@ public:
 	void SetFuelText(float NewFuel);
 	void SetFuelColour(bool OutOfFuel);
 	void UpdateRaceTimer(int32 NewMinutes, int32 NewSeconds);
+	void UpdateRestartTimer(int32 RestartSeconds);
+	void SetWinLoseText(bool HasWonRace);
 	
 protected:
 
@@ -38,4 +40,10 @@ protected:
 
 	UPROPERTY(EditAnywhere, meta=(BindWidget))
 	class UTextBlock* SecondsText;
+
+	UPROPERTY(EditAnywhere, meta=(BindWidget))
+	class UTextBlock* RestartText;
+
+	UPROPERTY(EditAnywhere, meta=(BindWidget))
+	class UTextBlock* WinLoseText;
 };

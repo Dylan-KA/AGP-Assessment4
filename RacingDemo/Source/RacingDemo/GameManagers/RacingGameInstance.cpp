@@ -16,15 +16,20 @@ UClass* URacingGameInstance::GetRoadMeshClass() const
  {
   return VehiclePlayerController.Get();
  }
- 
+
+ UClass* URacingGameInstance::GetRampClass() const
+ {
+  return RampClass.Get();
+ }
+
  UClass* URacingGameInstance::GetFuelPickupClass() const
  {
   return FuelPickupClass.Get();
  }
 
- UClass* URacingGameInstance::GetRampClass() const
+ UClass* URacingGameInstance::GetFinishLineClass() const
  {
-  return RampClass.Get();
+  return FinishLineClass.Get();
  }
 
 

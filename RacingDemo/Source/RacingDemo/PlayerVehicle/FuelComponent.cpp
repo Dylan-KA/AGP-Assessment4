@@ -40,7 +40,7 @@ void UFuelComponent::BeginPlay()
 // If vehicle is driving then decrease amount of fuel
 void UFuelComponent::UpdateFuelAmount(float DeltaTime)
 {
-	if (MyVehicleMovementComponent->GetForwardSpeedMPH() > 0.0f)
+	if (MyVehicleMovementComponent->GetForwardSpeedMPH() > 0.0f || MyVehicleMovementComponent->GetForwardSpeedMPH() < 0.0f)
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("CurrentFuel: %f"), CurrentFuel)
 		CurrentFuel -= DeltaTime/10;
@@ -61,15 +61,20 @@ void UFuelComponent::SetCurrentFuel(float NewFuel)
 }
 
 // Adds to the current fuel
-void UFuelComponent::AddFuel(float AddFuel)
+void UFuelComponent::AddFuel(float NewFuel)
 {
-	CurrentFuel += AddFuel;
+	CurrentFuel += NewFuel;
 }
 
 // Gets the current fuel amount
 float UFuelComponent::GetCurrentFuel()
 {
 	return CurrentFuel;
+}
+
+void UFuelComponent::ClientAddFuel_Implementation(float NewFuel)
+{
+	AddFuel(NewFuel);
 }
 
 // Return true if out of fuel

@@ -14,7 +14,7 @@ UCLASS()
 class RACINGDEMO_API AMyRacingGameMode : public AGameMode
 {
 	GENERATED_BODY()
-	
+
 public:
 
 	virtual void BeginPlay() override;
@@ -23,20 +23,24 @@ public:
 	// This is the first place it is safe to call replicated functions on the PlayerController.
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 
+	// Called after all players have joined the game
 	virtual void HandleMatchHasStarted() override;
 	
-	// Your MovePlayersToStart function.
+	// Iterate through all vehicle pawns and call start restart timer
+	void StartRestartTimer();
+
+	void RestartRace();
+
+protected:
+	
+	// Moves the given player to the appropriate start position based on the number of players
 	void MovePlayerToStart(APlayerController* NewPlayer);
 
 	// An actor that has not yet been moved to start
-	// The RaceTrackActor will move it once finished
+	// Will be moved once track is finished
 	UPROPERTY()
 	APlayerController* ServerPlayerController;
 	
-protected:
-
-	// Gets all vehicle pawns and based on the number of players,
-	// positions them appropriately at the start of the track
 	UPROPERTY()
 	AProceduralRacetrackActor* ProceduralRacetrackActor;
 

@@ -3,6 +3,7 @@
 
 #include "MyRacingGameMode.h"
 #include "Kismet/GameplayStatics.h"
+#include "RacingDemo/PlayerVehicle/PCGVehiclePawn.h"
 
 void AMyRacingGameMode::BeginPlay()
 {
@@ -22,14 +23,14 @@ void AMyRacingGameMode::PostLogin(APlayerController* NewPlayer)
 	ProceduralRacetrackActor = Cast<AProceduralRacetrackActor>(
 		UGameplayStatics::GetActorOfClass(GetWorld(), AProceduralRacetrackActor::StaticClass()));
 	
-	UE_LOG(LogTemp, Warning, TEXT("PostLogin executed from MyRacingGameMode"))
+	//UE_LOG(LogTemp, Warning, TEXT("PostLogin executed from MyRacingGameMode"))
 	
 	if (NewPlayer)
 	{
 		MovePlayerToStart(NewPlayer);
 	} else
 	{
-		UE_LOG(LogTemp, Error, TEXT("APlayerController* NewPlayer from PostLogin is NULL"))
+		//UE_LOG(LogTemp, Error, TEXT("APlayerController* NewPlayer from PostLogin is NULL"))
 	}
 }
 
@@ -38,7 +39,7 @@ void AMyRacingGameMode::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
 
-	UE_LOG(LogTemp, Warning, TEXT("MatchHasStarted"))
+	//UE_LOG(LogTemp, Warning, TEXT("MatchHasStarted"))
 
 	// Since the ListenServer's vehicle spawns before the track has generated,
 	// it is moved to the start at this point rather than when it joins in PostLogin
@@ -47,8 +48,28 @@ void AMyRacingGameMode::HandleMatchHasStarted()
 		MovePlayerToStart(ServerPlayerController);
 	} else
 	{
-		UE_LOG(LogTemp, Error, TEXT("ServerPlayerController is NULL"))
+		//UE_LOG(LogTemp, Error, TEXT("ServerPlayerController is NULL"))
 	}
+}
+
+// Iterate through all vehicle pawns and call start restart timer
+void AMyRacingGameMode::StartRestartTimer()
+{
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	{
+		APlayerController* PlayerController = It->Get();
+
+		if (PlayerController)
+		{
+			APCGVehiclePawn* VehiclePawn = Cast<APCGVehiclePawn>(PlayerController->GetPawn());
+			VehiclePawn->StartRestartTimer();
+		}
+	}
+}
+
+void AMyRacingGameMode::RestartRace()
+{
+	GetWorld()->ServerTravel("VehicleExampleMap");
 }
 
 // Moves the given player to the start of the track
@@ -59,18 +80,18 @@ void AMyRacingGameMode::MovePlayerToStart(APlayerController* NewPlayer)
 	APawn* PlayerPawn = NewPlayer->GetPawn();
 	if (PlayerPawn == nullptr)
 	{
-		UE_LOG(LogTemp, Error, TEXT("PlayerPawn of NewPlayer is NULL"))
+		//UE_LOG(LogTemp, Error, TEXT("PlayerPawn of NewPlayer is NULL"))
 	}
 	
 	if (ProceduralRacetrackActor == nullptr)
 	{
-		UE_LOG(LogTemp, Error, TEXT("ProceduralRacetrackActor is NULL"))
+		//UE_LOG(LogTemp, Error, TEXT("ProceduralRacetrackActor is NULL"))
 		return;
 	}
 
 	if (ProceduralRacetrackActor->HasGenerated())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("HAS GENERATED: MOVING PLAYER TO START"))
+		//UE_LOG(LogTemp, Warning, TEXT("HAS GENERATED: MOVING PLAYER TO START"))
 
 		// Calculate start positions
 		FVector ForwardVector = ProceduralRacetrackActor->GetTrackStart().ForwardRotation.Vector();
@@ -95,11 +116,11 @@ void AMyRacingGameMode::MovePlayerToStart(APlayerController* NewPlayer)
 		PlayerIndex += 1;
 	} else
 	{
-		UE_LOG(LogTemp, Error, TEXT("NOT YET GENERATED"))
+		//UE_LOG(LogTemp, Error, TEXT("NOT YET GENERATED"))
 		ServerPlayerController = NewPlayer;
 		if (ServerPlayerController)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Set ServerPlayerPawn"))
+			//UE_LOG(LogTemp, Warning, TEXT("Set ServerPlayerPawn"))
 		}
 	}
 }

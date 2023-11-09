@@ -3,12 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "RampActor.h"
 #include "Engine/StaticMeshActor.h"
 #include "GameFramework/Actor.h"
 #include "RacingDemo/Pathfinding/PathfindingSubsystem.h"
 #include "RoadSplineMeshActor.h"
 #include "RacingDemo/Pickups/FuelPickup.h"
+#include "RacetrackFinishLine.h"
+#include "RampActor.h"
 #include "ProceduralRacetrackActor.generated.h"
 
 USTRUCT()
@@ -35,7 +36,6 @@ public:
 	FRotator ForwardRotation;
 	UPROPERTY()
 	FVector Midpoint; 
-
 	bool operator==(const FTrackSection& Other)
 	{
 		return (Position == Other.Position && ForwardRotation == Other.ForwardRotation); 
@@ -73,7 +73,6 @@ protected:
 	// Pathfinding Subsystem
 	UPROPERTY()
 	UPathfindingSubsystem* PathfindingSubsystem;
-	
 	UPROPERTY()
 	TArray<FVector> Waypoints;
 	
@@ -115,9 +114,6 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 private:
-	float Time;
-
-	
 	// Loop through width and height to get the appropriate grid positions
 	void GenerateGrid();
 	// Find the top, bottom, left and right edge indexes and store them in the appropriate array
@@ -142,7 +138,9 @@ private:
 	void SpawnFuelPickups();
 	void SpawnRamps();
 
-
+	// Spawns in a collision box at the finish line
+	void SpawnFinishLine();
+	
 	// Helper Function 
 	FVector GetPointOnEdge(int32 EdgeIndex);
 	void PrintTrack();
@@ -160,7 +158,7 @@ private:
 	FVector Checkpoint1;
 	FVector Checkpoint2;
 	FVector EndPosition;
-
+	
 	TArray<FTrackSection> PossibleTrackSpawnPositions;
 
 	// Replicated properties
