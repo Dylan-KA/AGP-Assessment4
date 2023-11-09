@@ -156,10 +156,29 @@ public:
 	void ApplyWeightDistribution();
 
 	// Timer for how long the vehicle has been driving for
-	void Timer();
+	void RaceTimer();
+	// Race Timer Properties
+	FTimerHandle TimerHandle;
 	UPROPERTY()
 	int32 Minutes = 0;
 	UPROPERTY()
 	int32 Seconds = 0;
+
+	// Multicast RPC starts the countdown timer on each client
+	UFUNCTION(NetMulticast, Reliable)
+	void StartRestartTimer();
+	// Ticks down each second on client, calls server to restart on 0 seconds
+	void RestartTimer();
+	// Server RPC which tells server to restart the game
+	UFUNCTION(Server, Reliable)
+	void ServerRestart();
+	// Restart Timer properties
+	FTimerHandle RestartTimerHandle;
+	UPROPERTY()
+	int32 RestartSeconds = 3;
+
+	// True if player is first to reach finish line, used for UI
+	UPROPERTY(Replicated)
+	bool bHasWonRace = false;
 	
 };

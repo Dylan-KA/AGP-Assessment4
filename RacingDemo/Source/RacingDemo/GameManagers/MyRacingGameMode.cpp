@@ -3,6 +3,7 @@
 
 #include "MyRacingGameMode.h"
 #include "Kismet/GameplayStatics.h"
+#include "RacingDemo/PlayerVehicle/PCGVehiclePawn.h"
 
 void AMyRacingGameMode::BeginPlay()
 {
@@ -49,6 +50,26 @@ void AMyRacingGameMode::HandleMatchHasStarted()
 	{
 		//UE_LOG(LogTemp, Error, TEXT("ServerPlayerController is NULL"))
 	}
+}
+
+// Iterate through all vehicle pawns and call start restart timer
+void AMyRacingGameMode::StartRestartTimer()
+{
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	{
+		APlayerController* PlayerController = It->Get();
+
+		if (PlayerController)
+		{
+			APCGVehiclePawn* VehiclePawn = Cast<APCGVehiclePawn>(PlayerController->GetPawn());
+			VehiclePawn->StartRestartTimer();
+		}
+	}
+}
+
+void AMyRacingGameMode::RestartRace()
+{
+	GetWorld()->ServerTravel("VehicleExampleMap");
 }
 
 // Moves the given player to the start of the track
