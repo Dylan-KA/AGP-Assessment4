@@ -22,7 +22,9 @@ public:
 	UPROPERTY()
 	FRotator Rotation;
 	UPROPERTY()
-	int32 MeshIndex; 
+	int32 MeshIndex;
+	UPROPERTY()
+	float Scale;
 };
 
 USTRUCT()
