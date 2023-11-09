@@ -61,15 +61,20 @@ void UFuelComponent::SetCurrentFuel(float NewFuel)
 }
 
 // Adds to the current fuel
-void UFuelComponent::AddFuel(float AddFuel)
+void UFuelComponent::AddFuel(float NewFuel)
 {
-	CurrentFuel += AddFuel;
+	CurrentFuel += NewFuel;
 }
 
 // Gets the current fuel amount
 float UFuelComponent::GetCurrentFuel()
 {
 	return CurrentFuel;
+}
+
+void UFuelComponent::ClientAddFuel_Implementation(float NewFuel)
+{
+	AddFuel(NewFuel);
 }
 
 // Return true if out of fuel
