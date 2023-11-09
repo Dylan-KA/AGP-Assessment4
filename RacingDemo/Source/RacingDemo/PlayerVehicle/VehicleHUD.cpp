@@ -55,11 +55,30 @@ void UVehicleHUD::UpdateRaceTimer(int32 NewMinutes, int32 NewSeconds)
 
 void UVehicleHUD::UpdateRestartTimer(int32 RestartSeconds)
 {
-	if (RestartSeconds != -1)
+	if (RestartSeconds > 0)
 	{
 		RestartText->SetText(FText::FromString(FString::FromInt(RestartSeconds)));
+	}
+	if (RestartSeconds == 0)
+	{
+		RestartText->SetText(FText::FromString(FString::FromInt(RestartSeconds)));
+		WinLoseText->SetText(FText::FromString("Restarting Race..."));
+		const FLinearColor WhiteColour(FLinearColor(1.0f, 1.0f, 1.0f, 1.0f));
+		WinLoseText->SetColorAndOpacity(WhiteColour);
+	}
+}
+
+void UVehicleHUD::SetWinLoseText(bool HasWonRace)
+{
+	if (HasWonRace)
+	{
+		WinLoseText->SetText(FText::FromString("You Win!"));
+		const FLinearColor GreenColour(FLinearColor(0.0f, 1.0f, 0.0f, 1.0f));
+		WinLoseText->SetColorAndOpacity(GreenColour);
 	} else
 	{
-		RestartText->SetText(FText::GetEmpty());
+		WinLoseText->SetText(FText::FromString("You Lose!"));
+		const FLinearColor RedColour(FLinearColor(1.0f, 0.0f, 0.0f, 1.0f));
+		WinLoseText->SetColorAndOpacity(RedColour);
 	}
 }

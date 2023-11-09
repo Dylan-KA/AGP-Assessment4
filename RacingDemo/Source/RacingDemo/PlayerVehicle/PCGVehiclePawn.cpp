@@ -31,6 +31,7 @@ void APCGVehiclePawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	DOREPLIFETIME(APCGVehiclePawn, FuelComponent);
 	DOREPLIFETIME(APCGVehiclePawn, VehicleRarity);
 	DOREPLIFETIME(APCGVehiclePawn, VehicleStats);
+	DOREPLIFETIME(APCGVehiclePawn, bHasWonRace);
 	
 }
 
@@ -322,6 +323,7 @@ void APCGVehiclePawn::RestartTimer()
 {
 	if (VehicleHUD)
 	{
+		VehicleHUD->SetWinLoseText(bHasWonRace);
 		VehicleHUD->UpdateRestartTimer(RestartSeconds);
 	}
 	if (RestartSeconds == 0)
@@ -341,7 +343,10 @@ void APCGVehiclePawn::RestartTimer()
 			ServerRestart();
 		}
 	}
-	RestartSeconds -= 1;
+	if (RestartSeconds > 0)
+	{
+		RestartSeconds -= 1;
+	}
 }
 
 // Client tells Server to restart
