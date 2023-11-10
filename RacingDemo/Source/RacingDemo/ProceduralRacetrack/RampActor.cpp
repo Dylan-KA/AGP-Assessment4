@@ -11,17 +11,4 @@ ARampActor::ARampActor()
 	bReplicates = true;
 }
 
-// Called when the game starts or when spawned
-void ARampActor::BeginPlay()
-{
-	Super::BeginPlay();
-	
-}
-
-// Called every frame
-void ARampActor::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
 

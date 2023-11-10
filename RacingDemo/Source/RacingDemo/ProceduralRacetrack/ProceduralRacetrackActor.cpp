@@ -65,7 +65,7 @@ void AProceduralRacetrackActor::BeginPlay()
 
 void AProceduralRacetrackActor::GenerateRacetrackLevel()
 {
-	ClearTrackMeshes();
+	ClearMeshes();
 	// if on the server generate the racetrack level details
 	// then replicate them to the client
 	if(GetNetMode() < ENetMode::NM_Client)
@@ -86,12 +86,6 @@ void AProceduralRacetrackActor::GenerateRacetrackLevel()
 	
 }
 
-// Called every frame
-void AProceduralRacetrackActor::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
-
 void AProceduralRacetrackActor::GenerateGrid()
 {
 	for (int32 Y =  0; Y < Height; Y++)
@@ -106,7 +100,6 @@ void AProceduralRacetrackActor::GenerateGrid()
 	if(PathfindingSubsystem)
 	{
 		PathfindingSubsystem->PlaceProceduralNodes(Vertices, Width, Height);
-		Waypoints = PathfindingSubsystem->GetNodePositions();
 	}
 }
 
@@ -176,10 +169,10 @@ void AProceduralRacetrackActor::RandomiseCheckpoint()
 {
 	// get two random central checkpoints
 	int32 CheckpointIndex1 = CentralIndexes[FMath::RandRange(0, CentralIndexes.Num() - 1)];
-	Checkpoint1 = Waypoints[CheckpointIndex1];
+	Checkpoint1 = Vertices[CheckpointIndex1];
 	CentralIndexes.Remove(CheckpointIndex1);
 	int32 CheckpointIndex2 = CentralIndexes[FMath::RandRange(0, CentralIndexes.Num() - 1)];
-	Checkpoint2 = Waypoints[CheckpointIndex2];
+	Checkpoint2 = Vertices[CheckpointIndex2];
 }
 
 void AProceduralRacetrackActor::GenerateTrack()
@@ -235,7 +228,7 @@ void AProceduralRacetrackActor::SpawnTrack()
 	bHasGenerated = true;
 }
 
-void AProceduralRacetrackActor::ClearTrackMeshes()
+void AProceduralRacetrackActor::ClearMeshes()
 {
 	// clear all spawned meshes
 	for (auto MeshActor : RoadMeshActors)
@@ -274,7 +267,6 @@ void AProceduralRacetrackActor::ClearTrackValues()
 {
 	// clear generated track values
 	Vertices.Empty();
-	Waypoints.Empty();
 	Track.Empty();
 	TreeValues.Empty();
 }
@@ -285,8 +277,8 @@ void AProceduralRacetrackActor::GenerateTrees()
 
 	for (auto Index : CentralIndexes)
 	{
-		// create an array of possible spawn positions using the waypoints list
-		PossibleSpawnPositions.Add(Waypoints[Index]);
+		// create an array of possible spawn positions using the vertices list
+		PossibleSpawnPositions.Add(Vertices[Index]);
 	}
 	// removing the race track positions from possible spawn positions
 	for (auto TrackSection : Track)
@@ -355,8 +347,8 @@ void AProceduralRacetrackActor::SpawnFuelPickups()
 		// ensure spawn position is above the track
 		CentreSpawnPosition.Z += 100;
 		// find positions adjacent to centre spawn position
-		FVector LeftSpawnPosition = GetRelativePosition(CentreSpawnPosition, TrackSection.ForwardRotation, "Left");
-		FVector RightSpawnPosition = GetRelativePosition(CentreSpawnPosition, TrackSection.ForwardRotation, "Right");
+		FVector LeftSpawnPosition = GetAdjacentPosition(CentreSpawnPosition, TrackSection.ForwardRotation, "Left");
+		FVector RightSpawnPosition = GetAdjacentPosition(CentreSpawnPosition, TrackSection.ForwardRotation, "Right");
 		//Spawn 3 fuel pickups in a row at selected track section
 		AFuelPickup* FuelPickupCentre = GetWorld()->SpawnActor<AFuelPickup>(
 		GameInstance->GetFuelPickupClass(), CentreSpawnPosition, FRotator(0,0,0));
@@ -388,10 +380,10 @@ void AProceduralRacetrackActor::SpawnRamps()
 			SpawnPosition = CentrePosition;
 			break;
 		case 2:
-			SpawnPosition = GetRelativePosition(CentrePosition, TrackSection.ForwardRotation, "Right");
+			SpawnPosition = GetAdjacentPosition(CentrePosition, TrackSection.ForwardRotation, "Right");
 			break;
 		case 3:
-			SpawnPosition = GetRelativePosition(CentrePosition, TrackSection.ForwardRotation, "Left");
+			SpawnPosition = GetAdjacentPosition(CentrePosition, TrackSection.ForwardRotation, "Left");
 			break;
 		default:
 			UE_LOG(LogTemp, Warning, TEXT("Invalid Direction"));
@@ -429,22 +421,22 @@ FVector AProceduralRacetrackActor::GetPointOnEdge(int32 EdgeIndex)
 	if(EdgeIndex == 1)
 	{
 		// select random node on bottom edge
-		Position = Waypoints[BottomEdgeIndexes[FMath::RandRange(0,BottomEdgeIndexes.Num() - 1)]];
+		Position = Vertices[BottomEdgeIndexes[FMath::RandRange(0,BottomEdgeIndexes.Num() - 1)]];
 	}
 	if(EdgeIndex == 2)
 	{
 		// select random node on left edge
-		Position = Waypoints[LeftEdgeIndexes[FMath::RandRange(0,LeftEdgeIndexes.Num() - 1)]];
+		Position = Vertices[LeftEdgeIndexes[FMath::RandRange(0,LeftEdgeIndexes.Num() - 1)]];
 	}
 	if(EdgeIndex == 3)
 	{
 		// select random node on top edge
-		Position = Waypoints[TopEdgeIndexes[FMath::RandRange(0,TopEdgeIndexes.Num() - 1)]];
+		Position = Vertices[TopEdgeIndexes[FMath::RandRange(0,TopEdgeIndexes.Num() - 1)]];
 	}
 	if(EdgeIndex == 4)
 	{
 		// select random node on right edge
-		Position = Waypoints[RightEdgeIndexes[FMath::RandRange(0,RightEdgeIndexes.Num() - 1)]];
+		Position = Vertices[RightEdgeIndexes[FMath::RandRange(0,RightEdgeIndexes.Num() - 1)]];
 	}
 	return Position;
 }
@@ -460,7 +452,7 @@ void AProceduralRacetrackActor::PrintTrack()
 	}
 }
 
-FVector AProceduralRacetrackActor::GetRelativePosition(FVector Position, FRotator ForwardRotation, FString Direction)
+FVector AProceduralRacetrackActor::GetAdjacentPosition(FVector Position, FRotator ForwardRotation, FString Direction)
 {
 	FVector Rotation;
 	// Get the rotation vector and rotate it 90 degrees left or right around the Z axis
@@ -476,6 +468,7 @@ FVector AProceduralRacetrackActor::GetRelativePosition(FVector Position, FRotato
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Invalid Direction"));
 	}
+	// Add the position and the rotation multiplied by a distance to determine the adjacent position 
 	return Position + Rotation * 500;
 }
 
