@@ -33,9 +33,19 @@ UClass* URacingGameInstance::GetRoadMeshClass() const
   return FinishLineClass.Get();
  }
 
- void URacingGameInstance::PlayPickupSoundAtLocation(const FVector& Location)
+ void URacingGameInstance::PlayPickupSound()
  {
-  UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickupSoundCue, Location);
+  UGameplayStatics::PlaySound2D(GetWorld(), PickupSoundCue);
+ }
+
+ void URacingGameInstance::PlayRestartSound()
+ {
+  UGameplayStatics::PlaySound2D(GetWorld(), RestartSoundCue);
+ }
+
+ void URacingGameInstance::PlayCountdownSound()
+ {
+  UGameplayStatics::PlaySound2D(GetWorld(), CountdownSoundCue);
  }
 
 

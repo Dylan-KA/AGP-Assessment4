@@ -333,19 +333,32 @@ void APCGVehiclePawn::RestartTimer()
 		{
 			UE_LOG(LogTemp, Warning, TEXT("IN STANDALONE: Restarting the race"))
 			GetWorldTimerManager().ClearTimer(RestartTimerHandle);
+			if (URacingGameInstance* GameInstance = GetWorld()->GetGameInstance<URacingGameInstance>())
+			{
+				GameInstance->PlayRestartSound();
+			}
 			ServerRestart_Implementation();
+			
 		}
 		// Client tells Server to restart
 		if (GetNetMode() == NM_Client)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Telling Server to Restart the race"))
 			GetWorldTimerManager().ClearTimer(RestartTimerHandle);
+			if (URacingGameInstance* GameInstance = GetWorld()->GetGameInstance<URacingGameInstance>())
+			{
+				GameInstance->PlayRestartSound();
+			}
 			ServerRestart();
 		}
 	}
 	if (RestartSeconds > 0)
 	{
 		RestartSeconds -= 1;
+		if (URacingGameInstance* GameInstance = GetWorld()->GetGameInstance<URacingGameInstance>())
+		{
+			GameInstance->PlayCountdownSound();
+		}
 	}
 }
 

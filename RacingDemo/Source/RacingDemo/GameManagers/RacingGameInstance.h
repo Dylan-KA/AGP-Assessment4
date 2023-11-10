@@ -28,7 +28,9 @@ public:
 	UClass* GetFinishLineClass() const;
 
 	// Audio
-	void PlayPickupSoundAtLocation(const FVector& Location);
+	void PlayPickupSound();
+	void PlayRestartSound();
+	void PlayCountdownSound();
 	
 protected:
 
@@ -51,6 +53,12 @@ protected:
 	TSubclassOf<ARacetrackFinishLine> FinishLineClass;
 
 	// Audio
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category="Audio")
 	USoundBase* PickupSoundCue;
+
+	UPROPERTY(EditDefaultsOnly, Category="Audio")
+	USoundBase* RestartSoundCue;
+
+	UPROPERTY(EditDefaultsOnly, Category="Audio")
+	USoundBase* CountdownSoundCue;
 };

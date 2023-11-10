@@ -67,7 +67,7 @@ void UFuelComponent::AddFuel(float NewFuel)
 	CurrentFuel += NewFuel;
 	if (URacingGameInstance* GameInstance = GetWorld()->GetGameInstance<URacingGameInstance>())
 	{
-		GameInstance->PlayPickupSoundAtLocation(GetOwner()->GetActorLocation());
+		GameInstance->PlayPickupSound();
 	}
 }
 
@@ -82,7 +82,7 @@ void UFuelComponent::ClientAddFuel_Implementation(float NewFuel)
 	AddFuel(NewFuel);
 	if (URacingGameInstance* GameInstance = GetWorld()->GetGameInstance<URacingGameInstance>())
 	{
-		GameInstance->PlayPickupSoundAtLocation(GetOwner()->GetActorLocation());
+		GameInstance->PlayPickupSound();
 	}
 }
 
