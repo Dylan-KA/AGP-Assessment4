@@ -307,6 +307,7 @@ void AProceduralRacetrackActor::GenerateTrees()
 		Tree.Position = Position;
 		Tree.Rotation = FRotator(0,FMath::RandRange(0, 360),0);
 		Tree.MeshIndex = FMath::RandRange(0, TreeMeshes.Num() - 1);
+		Tree.Scale = FMath::RandRange(1.0f, 1.7f);
 		// Add each set of tree values to array
 		TreeValues.Add(Tree);
 
@@ -327,9 +328,11 @@ void AProceduralRacetrackActor::SpawnTrees()
 			TreeValue.Rotation);
 		TreeMeshActor->SetMobility(EComponentMobility::Stationary);
 		UStaticMeshComponent* TreeMeshComponent = TreeMeshActor->GetStaticMeshComponent();
+		TreeMeshActor->SetActorScale3D(FVector(TreeValue.Scale, TreeValue.Scale, TreeValue.Scale));
 		if (TreeMeshComponent)
 		{
 			TreeMeshComponent->SetStaticMesh(TreeMeshes[TreeValue.MeshIndex]);
+			TreeMeshComponent->SetCollisionProfileName("BlockAll");
 		}
 		TreeMeshActors.Add(TreeMeshActor);
 	}
@@ -410,6 +413,7 @@ void AProceduralRacetrackActor::SpawnStartLine()
 	if (StartFlagMeshComponent)
 	{
 		StartFlagMeshComponent->SetStaticMesh(StartFlagMesh);
+		StartFlagMeshComponent->SetCollisionProfileName("BlockAll");
 	}
 }
 
