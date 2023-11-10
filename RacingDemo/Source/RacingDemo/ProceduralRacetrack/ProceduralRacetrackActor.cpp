@@ -39,7 +39,6 @@ FTrackSection AProceduralRacetrackActor::GetTrackEnd() const
 {
 	// return second last section as the end of the track
 	return Track[Track.Num()-2]; 
-
 }
 
 
@@ -52,10 +51,9 @@ bool AProceduralRacetrackActor::HasGenerated() const
 void AProceduralRacetrackActor::BeginPlay()
 {
 	Super::BeginPlay();
-	//UE_LOG(LogTemp, Warning, TEXT("BeginPlay Starting"));
-
 	PathfindingSubsystem = GetWorld()->GetSubsystem<UPathfindingSubsystem>();
-	if(PathfindingSubsystem)
+	GameInstance = GetWorld()->GetGameInstance<URacingGameInstance>();
+	if(PathfindingSubsystem && GameInstance)
 	{
 		GenerateRacetrackLevel(); 
 	}
@@ -63,9 +61,6 @@ void AProceduralRacetrackActor::BeginPlay()
 	{
 		UE_LOG(LogTemp, Error, TEXT("Can't find subsystems"))
 	}
-	//PrintTrack();
-	//UE_LOG(LogTemp, Warning, TEXT("Begin Play Finished: %d"), GetNetMode()); 
-
 }
 
 void AProceduralRacetrackActor::GenerateRacetrackLevel()
@@ -95,7 +90,6 @@ void AProceduralRacetrackActor::GenerateRacetrackLevel()
 void AProceduralRacetrackActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	
 }
 
 void AProceduralRacetrackActor::GenerateGrid()
@@ -121,9 +115,6 @@ void AProceduralRacetrackActor::InitialiseIndexes()
 	// Clear Indexes
 	ClearIndexes();
 	// fill lists with the indexes of each node on the edge of the grid
-	//UE_LOG(LogTemp, Warning, TEXT("Height : %d"), Height);
-	//UE_LOG(LogTemp, Warning, TEXT("Width : %d"), Width);
-	
 	// Ignore the left and right rows
 	for(int32 i = 1; i < Width - 1; i++)
 	{
@@ -143,7 +134,7 @@ void AProceduralRacetrackActor::InitialiseIndexes()
 		LeftIndex += Width;
 	}
 	
-	// find all indexes which aren't on the edges
+	// find all central indexes of the grid by skipping thw top and bottom rows
 	for(int32 i = Width; i < (Width * Height) - (Width * 2); i++)
 	{
 		// check if index is on the left or right edge
@@ -153,11 +144,6 @@ void AProceduralRacetrackActor::InitialiseIndexes()
 		}
 		CentralIndexes.Add(i);
 	}
-
-	//UE_LOG(LogTemp, Warning, TEXT("Left Edge Length: %d"), LeftEdgeIndexes.Num());
-	//UE_LOG(LogTemp, Warning, TEXT("Right Edge Length: %d"), RightEdgeIndexes.Num());
-	//UE_LOG(LogTemp, Warning, TEXT("Top Edge Length: %d"), RightEdgeIndexes.Num());
-	//UE_LOG(LogTemp, Warning, TEXT("Bottom Edge Length: %d"), RightEdgeIndexes.Num());
 }
 
 void AProceduralRacetrackActor::ClearIndexes()
@@ -181,31 +167,25 @@ void AProceduralRacetrackActor::RandomiseStartAndEnd()
 	int32 StartEdge = Edges[FMath::RandRange(0,Edges.Num() - 1)];
 	Edges.Remove(StartEdge);
 	int32 EndEdge = Edges[FMath::RandRange(0, Edges.Num() - 1)];
-
+	// Get random point along both selected edges
 	StartPosition = GetPointOnEdge(StartEdge);
 	EndPosition = GetPointOnEdge(EndEdge);
 }
 
 void AProceduralRacetrackActor::RandomiseCheckpoint()
 {
-	// could improve this to allow the number of checkpoints to be changed in the editor
-	// get random central checkpoint
+	// get two random central checkpoints
 	int32 CheckpointIndex1 = CentralIndexes[FMath::RandRange(0, CentralIndexes.Num() - 1)];
 	Checkpoint1 = Waypoints[CheckpointIndex1];
 	CentralIndexes.Remove(CheckpointIndex1);
-	
 	int32 CheckpointIndex2 = CentralIndexes[FMath::RandRange(0, CentralIndexes.Num() - 1)];
 	Checkpoint2 = Waypoints[CheckpointIndex2];
 }
 
 void AProceduralRacetrackActor::GenerateTrack()
 {
-	//UE_LOG(LogTemp, Warning, TEXT("Start: %s"), *StartPosition.ToString());
-	//UE_LOG(LogTemp, Warning, TEXT("End: %s"), *EndPosition.ToString());
-	//UE_LOG(LogTemp, Warning, TEXT("Netmode: %d"), GetNetMode());
+	// generate a path between all checkpoints
 	TArray<FVector> Path; 
-	// Fix track generation so the path doesn't backtrack over itself
-	// Find path from start point to checkpoints to end point
 	Path = PathfindingSubsystem->GetPath(StartPosition, Checkpoint1);
 	Path.Pop(); 
 	Path.Append(PathfindingSubsystem->GetPath(Checkpoint1, Checkpoint2));
@@ -214,6 +194,7 @@ void AProceduralRacetrackActor::GenerateTrack()
 	//store path positions in track
 	for (auto Position : Path)
 	{
+		// store the path in a list of track sections
 		FTrackSection Section;
 		Section.Position = Position; 
 		Track.Add(Section);
@@ -222,59 +203,35 @@ void AProceduralRacetrackActor::GenerateTrack()
 
 void AProceduralRacetrackActor::SpawnTrack()
 {
-	//UE_LOG(LogTemp, Warning, TEXT("Spawn Track Implementation"));
-	//UE_LOG(LogTemp, Warning, TEXT("Netmode: %d"), GetNetMode());
-	//UE_LOG(LogTemp, Warning, TEXT("Track Length: %d"), Track.Num());
-	
-
 	FVector PrevPosition;
-	// for every point on the track spawn in a road mesh 
+	// spawn in a road mesh for every section of the track  
 	for (int32 i = 0; i < Track.Num(); i++)
 	{
 		FVector CurrentPosition = Track[i].Position;
 		// if this is the second track section 
 		if( i != 0 )
 		{
+			// Determine the midpoint between sections for item spawning
 			FVector MidPoint = (CurrentPosition + PrevPosition) / 2;
+			Track[i-1].Midpoint = MidPoint;
+			// determine difference between positions so splines can be adjusted
 			FVector Diff = CurrentPosition - PrevPosition;
 			PrevPosition.Z += 1;
-			//UE_LOG(LogTemp, Warning, TEXT("Step: %s"), *PrevPosition.ToString());
-			
-			// Spawn a road at each point and face it towards the next point on the track
+			// Find the orientation of each track section
 			FRotator Rotation = FRotator(0,UKismetMathLibrary::FindLookAtRotation(PrevPosition, CurrentPosition).Yaw,0);
 			Track[i-1].ForwardRotation = Rotation;
-			Track[i-1].Midpoint = MidPoint;
-			if (const URacingGameInstance* GameInstance =
-				GetWorld()->GetGameInstance<URacingGameInstance>())
-			{
-
-				ARoadSplineMeshActor* RoadMeshActor = GetWorld()->SpawnActor<ARoadSplineMeshActor>(
-				GameInstance->GetRoadMeshClass(), PrevPosition,Rotation);
-
-				RoadMeshActors.Add(RoadMeshActor);
-				RoadMeshActor->GetSplineMeshComponent()->SetStartPosition(FVector(-200 ,0.0, 1.0 ));
-				RoadMeshActor->GetSplineMeshComponent()->SetEndPosition(FVector(Diff.Length() + 200,0.0, 1.0 ));
-				
-			}
-			
-			// if this is the second point on the track
-			// position the start flag at the midpoint
-			if(i == 1)
-			{
-				StartFlagMeshActor = GetWorld()->SpawnActor<AStaticMeshActor>(MidPoint, Rotation);
-				StartFlagMeshActor->SetMobility(EComponentMobility::Stationary);
-				StartFlagMeshActor->SetActorScale3D(FVector(1,1.5,1));
-
-				UStaticMeshComponent* StartFlagMeshComponent = StartFlagMeshActor->GetStaticMeshComponent();
-				if (StartFlagMeshComponent)
-				{
-					StartFlagMeshComponent->SetStaticMesh(StartFlagMesh);
-				}
-				
-			}
+			// Spawn road splines
+			ARoadSplineMeshActor* RoadMeshActor = GetWorld()->SpawnActor<ARoadSplineMeshActor>(
+			GameInstance->GetRoadMeshClass(), PrevPosition,Rotation);
+			// set the starting and ending positions of each spline at the position of the next section 
+			RoadMeshActor->GetSplineMeshComponent()->SetStartPosition(FVector(-200 ,0.0, 1.0 ));
+			RoadMeshActor->GetSplineMeshComponent()->SetEndPosition(FVector(Diff.Length() + 200,0.0, 1.0 ));
+			RoadMeshActors.Add(RoadMeshActor);
 		}
 		PrevPosition = CurrentPosition;
 	}
+	SpawnStartLine();
+
 	bHasGenerated = true;
 }
 
@@ -394,27 +351,20 @@ void AProceduralRacetrackActor::SpawnFuelPickups()
 		FVector CentreSpawnPosition = TrackSection.Midpoint;
 		// ensure spawn position is above the track
 		CentreSpawnPosition.Z += 100;
-		// find positions to left and right of the centre spawn position
+		// find positions adjacent to centre spawn position
 		FVector LeftSpawnPosition = GetRelativePosition(CentreSpawnPosition, TrackSection.ForwardRotation, "Left");
 		FVector RightSpawnPosition = GetRelativePosition(CentreSpawnPosition, TrackSection.ForwardRotation, "Right");
-		if (const URacingGameInstance* GameInstance =
-				GetWorld()->GetGameInstance<URacingGameInstance>())
-		{
-			//Spawn fuel pickup at position
-			AFuelPickup* FuelPickupCentre = GetWorld()->SpawnActor<AFuelPickup>(
-			GameInstance->GetFuelPickupClass(), CentreSpawnPosition, FRotator(0,0,0));
-			//UE_LOG(LogTemp, Warning, TEXT("Centre Position: %s"), *CentreSpawnPosition.ToString());
-			AFuelPickup* FuelPickupLeft = GetWorld()->SpawnActor<AFuelPickup>(
-			GameInstance->GetFuelPickupClass(), LeftSpawnPosition, FRotator(0,0,0));
-			//UE_LOG(LogTemp, Warning, TEXT("Left Position: %s"), *LeftSpawnPosition.ToString());
-			AFuelPickup* FuelPickupRight = GetWorld()->SpawnActor<AFuelPickup>(
-			GameInstance->GetFuelPickupClass(), RightSpawnPosition, FRotator(0,0,0));
-			//UE_LOG(LogTemp, Warning, TEXT("Right Position: %s"), *RightSpawnPosition.ToString());
-			
-			FuelPickups.Add(FuelPickupCentre);
-			FuelPickups.Add(FuelPickupLeft);
-			FuelPickups.Add(FuelPickupRight);
-		}
+		//Spawn 3 fuel pickups in a row at selected track section
+		AFuelPickup* FuelPickupCentre = GetWorld()->SpawnActor<AFuelPickup>(
+		GameInstance->GetFuelPickupClass(), CentreSpawnPosition, FRotator(0,0,0));
+		AFuelPickup* FuelPickupLeft = GetWorld()->SpawnActor<AFuelPickup>(
+		GameInstance->GetFuelPickupClass(), LeftSpawnPosition, FRotator(0,0,0));
+		AFuelPickup* FuelPickupRight = GetWorld()->SpawnActor<AFuelPickup>(
+		GameInstance->GetFuelPickupClass(), RightSpawnPosition, FRotator(0,0,0));
+		
+		FuelPickups.Add(FuelPickupCentre);
+		FuelPickups.Add(FuelPickupLeft);
+		FuelPickups.Add(FuelPickupRight);
 		//Remove position from list
 		PossibleTrackSpawnPositions.Remove(TrackSection);
 	}
@@ -428,6 +378,7 @@ void AProceduralRacetrackActor::SpawnRamps()
 		int32 RandomDirection = FMath::RandRange(1,3);
 		FTrackSection TrackSection = PossibleTrackSpawnPositions[FMath::RandRange(0,PossibleTrackSpawnPositions.Num()-1)];
 		FVector CentrePosition = TrackSection.Midpoint;
+		// select a random track section and alignment as a spawn position
 		switch (RandomDirection)
 		{
 		case 1:
@@ -443,26 +394,29 @@ void AProceduralRacetrackActor::SpawnRamps()
 			UE_LOG(LogTemp, Warning, TEXT("Invalid Direction"));
 			break;
 		}
-		if(const URacingGameInstance* GameInstance =
-			GetWorld()->GetGameInstance<URacingGameInstance>())
-		{
-			ARampActor* RampActor = GetWorld()->SpawnActor<ARampActor>(GameInstance->GetRampClass(), SpawnPosition, TrackSection.ForwardRotation);
-			Ramps.Add(RampActor);
-		}
+		// spawn the ramp actor
+		ARampActor* RampActor = GetWorld()->SpawnActor<ARampActor>(GameInstance->GetRampClass(), SpawnPosition, TrackSection.ForwardRotation);
+		Ramps.Add(RampActor);
 		PossibleTrackSpawnPositions.Remove(TrackSection);
+	}
+}
+
+void AProceduralRacetrackActor::SpawnStartLine()
+{
+	StartFlagMeshActor = GetWorld()->SpawnActor<AStaticMeshActor>(Track[1].Midpoint, Track[1].ForwardRotation);
+	StartFlagMeshActor->SetMobility(EComponentMobility::Stationary);
+	StartFlagMeshActor->SetActorScale3D(FVector(1,1.5,1));
+	UStaticMeshComponent* StartFlagMeshComponent = StartFlagMeshActor->GetStaticMeshComponent();
+	if (StartFlagMeshComponent)
+	{
+		StartFlagMeshComponent->SetStaticMesh(StartFlagMesh);
 	}
 }
 
 void AProceduralRacetrackActor::SpawnFinishLine()
 {
-	if (const URacingGameInstance* GameInstance = GetWorld()->GetGameInstance<URacingGameInstance>())
-	{
-		ARacetrackFinishLine* FinishLine = GetWorld()->SpawnActor<ARacetrackFinishLine>(
-			GameInstance->GetFinishLineClass(), GetTrackEnd().Position, FRotator::ZeroRotator);
-		
-		FinishLine->SetActorLocationAndRotation(GetTrackEnd().Position, GetTrackEnd().ForwardRotation,
-				false, nullptr, ETeleportType::TeleportPhysics);
-	}
+	ARacetrackFinishLine* FinishLine = GetWorld()->SpawnActor<ARacetrackFinishLine>(
+		GameInstance->GetFinishLineClass(), GetTrackEnd().Position, GetTrackEnd().ForwardRotation);
 }
 
 FVector AProceduralRacetrackActor::GetPointOnEdge(int32 EdgeIndex)

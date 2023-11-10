@@ -10,6 +10,8 @@
 #include "RacingDemo/Pickups/FuelPickup.h"
 #include "RacetrackFinishLine.h"
 #include "RampActor.h"
+#include "Engine/DirectionalLight.h"
+#include "RacingDemo/GameManagers/RacingGameInstance.h"
 #include "ProceduralRacetrackActor.generated.h"
 
 USTRUCT()
@@ -68,11 +70,17 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	UProceduralMeshComponent* ProceduralMesh;
 
+	// Randomise Sun Rotation
+	//UFUNCTION(BlueprintImplementableEvent)
+	//void RandomiseSunRotation();
+
 	void GenerateRacetrackLevel();
 	
 	// Pathfinding Subsystem
 	UPROPERTY()
 	UPathfindingSubsystem* PathfindingSubsystem;
+	UPROPERTY()
+	const URacingGameInstance* GameInstance;
 	UPROPERTY()
 	TArray<FVector> Waypoints;
 	
@@ -94,6 +102,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UStaticMesh* StartFlagMesh;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	ADirectionalLight* Sun;
+	
 	// Meshes 
 	UPROPERTY()
 	TArray<ARoadSplineMeshActor*> RoadMeshActors;
@@ -135,13 +146,15 @@ private:
 	UFUNCTION()
 	void SpawnTrees();
 
+	// Spawn fuel pickup items randomly across the track 
 	void SpawnFuelPickups();
 	void SpawnRamps();
 
+	void SpawnStartLine();
 	// Spawns in a collision box at the finish line
 	void SpawnFinishLine();
 	
-	// Helper Function 
+	// Helper Functions 
 	FVector GetPointOnEdge(int32 EdgeIndex);
 	void PrintTrack();
 	FVector GetRelativePosition(FVector Position, FRotator ForwardRotation, FString Direction); 
@@ -168,6 +181,7 @@ private:
 	// Tree values include position, rotation and mesh type
 	UPROPERTY(ReplicatedUsing=SpawnTrees)
 	TArray<FTree> TreeValues;
-	
+//	UPROPERTY(ReplicatedUsing=RotateSun)
+//	FRotator SunRotation; 
 
 };
