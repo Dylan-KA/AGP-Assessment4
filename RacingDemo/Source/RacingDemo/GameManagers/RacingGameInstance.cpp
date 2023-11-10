@@ -1,6 +1,7 @@
  // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "RacingGameInstance.h"
+#include "Kismet/GameplayStatics.h"
 
  UClass* URacingGameInstance::GetVehicleClass() const
 {
@@ -30,6 +31,11 @@ UClass* URacingGameInstance::GetRoadMeshClass() const
  UClass* URacingGameInstance::GetFinishLineClass() const
  {
   return FinishLineClass.Get();
+ }
+
+ void URacingGameInstance::PlayPickupSoundAtLocation(const FVector& Location)
+ {
+  UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickupSoundCue, Location);
  }
 
 

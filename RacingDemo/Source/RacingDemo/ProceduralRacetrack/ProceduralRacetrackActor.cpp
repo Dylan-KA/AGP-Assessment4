@@ -307,7 +307,7 @@ void AProceduralRacetrackActor::GenerateTrees()
 		Tree.Position = Position;
 		Tree.Rotation = FRotator(0,FMath::RandRange(0, 360),0);
 		Tree.MeshIndex = FMath::RandRange(0, TreeMeshes.Num() - 1);
-		Tree.Scale = FMath::RandRange(1.0f, 1.7f);
+		Tree.Scale = FMath::RandRange(1.0f, 1.75f);
 		// Add each set of tree values to array
 		TreeValues.Add(Tree);
 

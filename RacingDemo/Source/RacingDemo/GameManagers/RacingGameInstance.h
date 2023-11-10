@@ -21,16 +21,14 @@ class RACINGDEMO_API URacingGameInstance : public UGameInstance
 public:
 
 	UClass* GetVehicleClass() const;
-
 	UClass* GetRoadMeshClass() const;
-
 	UClass* GetVehiclePlayerController() const;
-
 	UClass* GetRampClass() const;
-
 	UClass* GetFuelPickupClass() const;
-
 	UClass* GetFinishLineClass() const;
+
+	// Audio
+	void PlayPickupSoundAtLocation(const FVector& Location);
 	
 protected:
 
@@ -51,5 +49,8 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, Category="Finish Line Class")
 	TSubclassOf<ARacetrackFinishLine> FinishLineClass;
-	
+
+	// Audio
+	UPROPERTY(EditDefaultsOnly)
+	USoundBase* PickupSoundCue;
 };

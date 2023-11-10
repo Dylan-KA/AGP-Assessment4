@@ -4,6 +4,7 @@
 #include "FuelComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "WheeledVehiclePawn.h"
+#include "RacingDemo/GameManagers/RacingGameInstance.h"
 
 // Sets default values for this component's properties
 UFuelComponent::UFuelComponent()
@@ -64,6 +65,10 @@ void UFuelComponent::SetCurrentFuel(float NewFuel)
 void UFuelComponent::AddFuel(float NewFuel)
 {
 	CurrentFuel += NewFuel;
+	if (URacingGameInstance* GameInstance = GetWorld()->GetGameInstance<URacingGameInstance>())
+	{
+		GameInstance->PlayPickupSoundAtLocation(GetOwner()->GetActorLocation());
+	}
 }
 
 // Gets the current fuel amount
@@ -75,6 +80,10 @@ float UFuelComponent::GetCurrentFuel()
 void UFuelComponent::ClientAddFuel_Implementation(float NewFuel)
 {
 	AddFuel(NewFuel);
+	if (URacingGameInstance* GameInstance = GetWorld()->GetGameInstance<URacingGameInstance>())
+	{
+		GameInstance->PlayPickupSoundAtLocation(GetOwner()->GetActorLocation());
+	}
 }
 
 // Return true if out of fuel
