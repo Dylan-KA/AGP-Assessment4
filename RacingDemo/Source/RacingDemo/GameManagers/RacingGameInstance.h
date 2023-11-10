@@ -21,16 +21,16 @@ class RACINGDEMO_API URacingGameInstance : public UGameInstance
 public:
 
 	UClass* GetVehicleClass() const;
-
 	UClass* GetRoadMeshClass() const;
-
 	UClass* GetVehiclePlayerController() const;
-
 	UClass* GetRampClass() const;
-
 	UClass* GetFuelPickupClass() const;
-
 	UClass* GetFinishLineClass() const;
+
+	// Audio
+	void PlayPickupSound();
+	void PlayRestartSound();
+	void PlayCountdownSound();
 	
 protected:
 
@@ -51,5 +51,14 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, Category="Finish Line Class")
 	TSubclassOf<ARacetrackFinishLine> FinishLineClass;
-	
+
+	// Audio
+	UPROPERTY(EditDefaultsOnly, Category="Audio")
+	USoundBase* PickupSoundCue;
+
+	UPROPERTY(EditDefaultsOnly, Category="Audio")
+	USoundBase* RestartSoundCue;
+
+	UPROPERTY(EditDefaultsOnly, Category="Audio")
+	USoundBase* CountdownSoundCue;
 };

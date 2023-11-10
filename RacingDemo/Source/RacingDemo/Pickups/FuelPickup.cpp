@@ -20,8 +20,12 @@ void AFuelPickup::OnPickupOverlap(UPrimitiveComponent* OverlappedComponent, AAct
 		}
 		if (GetNetMode() == NM_ListenServer || GetNetMode() == NM_DedicatedServer)
 		{
-			// RPC call to clients
-			FuelComponent->ClientAddFuel(FuelAmount);
+			if(FuelComponent)
+			{
+				// RPC call to clients
+				FuelComponent->ClientAddFuel(FuelAmount);
+			}
+			
 		}
 		Destroy();
 	}
