@@ -56,7 +56,7 @@ void APCGVehiclePawn::BeginPlay()
 		SetUnderGlowColour();
 
 		// Start the race timer
-		GetWorldTimerManager().SetTimer(TimerHandle, this, &APCGVehiclePawn::RaceTimer, 1.0f, true,
+		GetWorldTimerManager().SetTimer(RaceTimerHandle, this, &APCGVehiclePawn::RaceTimer, 1.0f, true,
 			1.5f);
 	} else if (GetNetMode() == NM_DedicatedServer)
 	{
@@ -67,7 +67,7 @@ void APCGVehiclePawn::BeginPlay()
 		FuelComponent->SetCurrentFuel(VehicleStats.MaxFuelCapacity);
 
 		// Start the race timer
-		GetWorldTimerManager().SetTimer(TimerHandle, this, &APCGVehiclePawn::RaceTimer, 1.0f, true,
+		GetWorldTimerManager().SetTimer(RaceTimerHandle, this, &APCGVehiclePawn::RaceTimer, 1.0f, true,
 			1.5f);
 	}
 	
@@ -84,14 +84,14 @@ void APCGVehiclePawn::BeginPlay()
 		DrawUI();
 
 		// Start the race timer
-		GetWorldTimerManager().SetTimer(TimerHandle, this, &APCGVehiclePawn::RaceTimer, 1.0f, true,
+		GetWorldTimerManager().SetTimer(RaceTimerHandle, this, &APCGVehiclePawn::RaceTimer, 1.0f, true,
 			0.0f);
 	}
 
 	if (GetNetMode() == NM_Client)
 	{
 		// Start the race timer
-		GetWorldTimerManager().SetTimer(TimerHandle, this, &APCGVehiclePawn::RaceTimer, 1.0f, true,
+		GetWorldTimerManager().SetTimer(RaceTimerHandle, this, &APCGVehiclePawn::RaceTimer, 1.0f, true,
 			0.0f);
 	}
 }
@@ -360,6 +360,7 @@ void APCGVehiclePawn::RaceTimer()
 // Multicast RPC, server tells all clients to start countdown
 void APCGVehiclePawn::StartRestartTimer_Implementation()
 {
+	GetWorldTimerManager().ClearTimer(RaceTimerHandle);
 	GetWorldTimerManager().SetTimer(RestartTimerHandle, this, &APCGVehiclePawn::RestartTimer,
 		1.0f, true,0.0f);
 }

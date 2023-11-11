@@ -167,7 +167,7 @@ public:
 	// Timer for how long the vehicle has been driving for
 	void RaceTimer();
 	// Race Timer Properties
-	FTimerHandle TimerHandle;
+	FTimerHandle RaceTimerHandle;
 	UPROPERTY()
 	int32 Minutes = 0;
 	UPROPERTY()

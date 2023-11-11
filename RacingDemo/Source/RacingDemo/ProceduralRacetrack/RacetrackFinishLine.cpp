@@ -49,7 +49,6 @@ void ARacetrackFinishLine::OnFinishOverlap(UPrimitiveComponent* OverlappedCompon
 	{
 		UE_LOG(LogTemp, Warning, TEXT("A Vehicle has reached the finish line"))
 		VehiclePawn->bHasWonRace = true;
-		FTimerHandle TimerHandle;
 		// Start the restart timer
 		AMyRacingGameMode* GameMode = Cast<AMyRacingGameMode>(GetWorld()->GetAuthGameMode());
 		GameMode->StartRestartTimer();
