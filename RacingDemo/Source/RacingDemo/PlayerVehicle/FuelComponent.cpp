@@ -80,10 +80,6 @@ float UFuelComponent::GetCurrentFuel()
 void UFuelComponent::ClientAddFuel_Implementation(float NewFuel)
 {
 	AddFuel(NewFuel);
-	if (URacingGameInstance* GameInstance = GetWorld()->GetGameInstance<URacingGameInstance>())
-	{
-		GameInstance->PlayPickupSound();
-	}
 }
 
 // Return true if out of fuel

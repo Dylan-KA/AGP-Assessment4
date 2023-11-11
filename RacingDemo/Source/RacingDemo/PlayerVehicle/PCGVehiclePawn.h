@@ -133,7 +133,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UVehicleHUD> VehicleHUDClass;
 
-	// Vehicle HUD helper funcitons
+	// Vehicle HUD helper functions
 	UFUNCTION()
 	void DrawUI();
 	UFUNCTION()

@@ -67,7 +67,7 @@ void APCGVehiclePawn::BeginPlay()
 			1.5f);
 	}
 	
-	// Initial setup for standalone singeplayer
+	// Initial setup for standalone single-player
 	if (GetNetMode() == NM_Standalone)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("NetMode is Standalone"))
@@ -385,6 +385,14 @@ void APCGVehiclePawn::RestartTimer()
 				GameInstance->PlayRestartSound();
 			}
 			ServerRestart();
+		}
+		if (GetNetMode() == NM_ListenServer)
+		{
+			GetWorldTimerManager().ClearTimer(RestartTimerHandle);
+			if (URacingGameInstance* GameInstance = GetWorld()->GetGameInstance<URacingGameInstance>())
+			{
+				GameInstance->PlayRestartSound();
+			}
 		}
 	}
 	if (RestartSeconds > 0)

@@ -31,8 +31,11 @@ void APickupBase::BeginPlay()
 	
 	if (PickupCollider)
 	{
-		// This attaches our OnPickupOverlap function to be called when the OnComponentBeginOverlap event is triggered.
-		PickupCollider->OnComponentBeginOverlap.AddDynamic(this, &APickupBase::OnPickupOverlap);
+		if (GetNetMode() != NM_Client)
+		{
+			// This attaches our OnPickupOverlap function to be called when the OnComponentBeginOverlap event is triggered.
+			PickupCollider->OnComponentBeginOverlap.AddDynamic(this, &APickupBase::OnPickupOverlap);
+		}
 	}
 	else
 	{
