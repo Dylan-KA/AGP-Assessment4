@@ -2,7 +2,6 @@
 
 #include "PCGVehiclePawn.h"
 #include "ChaosVehicleMovementComponent.h"
-#include "GameFramework/GameModeBase.h"
 #include "Net/UnrealNetwork.h"
 #include "RacingDemo/GameManagers/MyRacingGameMode.h"
 #include "UObject/Class.h"
@@ -33,6 +32,9 @@ void APCGVehiclePawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	DOREPLIFETIME(APCGVehiclePawn, VehicleStats);
 	DOREPLIFETIME(APCGVehiclePawn, bHasWonRace);
 	
+	DOREPLIFETIME(APCGVehiclePawn, MaterialRoughness);
+	DOREPLIFETIME(APCGVehiclePawn, MaterialMetallic);
+	DOREPLIFETIME(APCGVehiclePawn, MaterialSpecular);
 }
 
 // Called when the game starts or when spawned
@@ -45,6 +47,7 @@ void APCGVehiclePawn::BeginPlay()
 	if (GetNetMode() == NM_ListenServer)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("NetMode is ListenServer"))
+		PopulateMaterialParams();
 		ProceduralComponent->GenerateRandomVehicle(VehicleRarity, VehicleStats);
 		ApplyWeightDistribution();
 		FuelComponent->SetCurrentFuel(VehicleStats.MaxFuelCapacity);
@@ -58,6 +61,7 @@ void APCGVehiclePawn::BeginPlay()
 	} else if (GetNetMode() == NM_DedicatedServer)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("NetMode is DedicatedServer"))
+		PopulateMaterialParams();
 		ProceduralComponent->GenerateRandomVehicle(VehicleRarity, VehicleStats);
 		ApplyWeightDistribution();
 		FuelComponent->SetCurrentFuel(VehicleStats.MaxFuelCapacity);
@@ -71,6 +75,7 @@ void APCGVehiclePawn::BeginPlay()
 	if (GetNetMode() == NM_Standalone)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("NetMode is Standalone"))
+		PopulateMaterialParams();
 		ProceduralComponent->GenerateRandomVehicle(VehicleRarity, VehicleStats);
 		ApplyWeightDistribution();
 		GenerateProceduralMaterial();
@@ -102,12 +107,9 @@ void APCGVehiclePawn::GenerateProceduralMaterial()
 	// Set the chassis material to this Dynamic material
 	GetMesh()->SetMaterial(2, DynamicMaterial);
 	// Randomise parameters
-	ServerRoughness = FMath::RandRange(0.0f, 1.0f);
-	DynamicMaterial->SetScalarParameterValue(TEXT("Roughness"), ServerRoughness);
-	ServerMetallic = FMath::RandRange(0.0f, 1.0f);
-	DynamicMaterial->SetScalarParameterValue(TEXT("Metallic"), ServerMetallic); 
-	ServerSpecular = FMath::RandRange(0.0f, 1.0f);
-	DynamicMaterial->SetScalarParameterValue(TEXT("Specular"), ServerSpecular);
+	DynamicMaterial->SetScalarParameterValue(TEXT("Roughness"), MaterialRoughness);
+	DynamicMaterial->SetScalarParameterValue(TEXT("Metallic"),MaterialMetallic); 
+	DynamicMaterial->SetScalarParameterValue(TEXT("Specular"), MaterialSpecular);
 	// Set Colour based on rarity
 	switch (VehicleRarity)
 	{
@@ -159,6 +161,14 @@ void APCGVehiclePawn::GenerateProceduralMaterial(float Roughness, float Metallic
 	default:
 		break;
 	}
+}
+
+// Sets the params before GenerateRandomVehicle, otherwise it happens after replication to client
+void APCGVehiclePawn::PopulateMaterialParams()
+{
+	MaterialRoughness = FMath::RandRange(0.0f, 1.0f);
+	MaterialMetallic = FMath::RandRange(0.0f, 1.0f);
+	MaterialSpecular = FMath::RandRange(0.0f, 1.0f);
 }
 
 // Initialises and attaches all light components to the vehicle
@@ -418,7 +428,7 @@ void APCGVehiclePawn::SetVehicleVisuals()
 	FText VehicleRarityText = UEnum::GetDisplayValueAsText(VehicleRarity);
 	//UE_LOG(LogTemp, Warning, TEXT("RARITY REPLICATED ON CLIENT: %s"), *VehicleRarityText.ToString())
 
-	GenerateProceduralMaterial(ServerRoughness, ServerMetallic, ServerSpecular);
+	GenerateProceduralMaterial(MaterialRoughness, MaterialMetallic, MaterialSpecular);
 	SetUnderGlowColour();
 	
 	DrawUI();
